@@ -7,9 +7,9 @@
 | `src/sieve_as_code/live.py` | `discover`, `discover_targets` |
 | `src/sieve_as_code/plan.py` | `plan`, `diff`, `PlanEntry`, `Reorder`, `MissingTarget`, `Flag`, `PlanResult` |
 | `src/sieve_as_code/declared.py` | Added `script_facts`, `ScriptFacts`, `Mailbox`; `_Scanner` records `fileinto` mailboxes |
-| `src/sieve_as_code/model.py` | Added `FilterSet` |
-| `tests/unit/test_live.py` | 5 tests |
-| `tests/unit/test_plan.py` | 30 tests |
+| `src/sieve_as_code/model.py` | Added `FilterSet`, `Rename` |
+| `tests/unit/test_live.py` | 8 tests |
+| `tests/unit/test_plan.py` | 32 tests |
 | `tests/unit/test_declared.py` | `script_facts` cases added |
 | `README.md` | Status line |
 
@@ -17,7 +17,7 @@
 
 | Requirement | File | Status |
 |-------------|------|--------|
-| FR-DISC.1 | `live.py:discover` | Implemented |
+| FR-DISC.1 | `live.py:discover`, `_number_duplicates` | Implemented |
 | FR-PLAN.1, FR-PLAN.2 | `plan.py:_entries`, `_live_only`, `_reorder` | Implemented |
 | FR-PLAN.3 | `plan.py:_facts`, `_missing_targets`; `declared.py:script_facts` | Implemented |
 | FR-PLAN.4 | `plan.py:plan` | Implemented |
@@ -32,7 +32,7 @@ No gaps.
 | BR | Implemented in | Tests |
 |----|----------------|-------|
 | BR-1, BR-16 | `discover`, `discover_targets` | `test_live.py`: `test_discover_returns_*`, `test_discover_and_targets_make_read_only_calls_only` |
-| BR-2 | `discover` | `test_duplicate_live_names_*` |
+| BR-2 | `_number_duplicates` | `test_duplicate_live_names_*`, `test_numbering_skips_*`, `test_numbered_names_are_unique_*` (PBT), `test_plan_reports_renamed_*` |
 | BR-3 | `_entries` | `test_names_match_case_sensitively` |
 | BR-4 | `_entries` | `test_whitespace_only_differences_*` (PBT) |
 | BR-5, BR-6, BR-7, BR-14 | `_entries`, `_live_only`, `diff` | `test_each_entry_kind_*`, `test_content_and_enabled_*`, `test_a_disabled_live_only_*` |
@@ -46,7 +46,7 @@ No gaps.
 
 ## Tests
 
-- 257 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
+- 262 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
 - Build and test: `uv sync && make quality`.
 
 ## Implementation notes

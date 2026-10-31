@@ -242,3 +242,11 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: B
 [Justification]: Live check against `proton` 4.3.0: all bad scripts (missing brace, missing `require`, unknown extension) fail only at create with `[HTTP 400] 2001: Invalid filter representation` and no detail, and `--dry-run` accepts them, so a bad file means a half-applied run (FR-APPLY.4). A full Sieve grammar would duplicate Proton's, so the local check is limited to errors that are certain, never rejecting what it cannot prove wrong.
 [Answer]: A — the user expects `plan` to report format issues, as `terraform plan` does.
+
+### Q27. Live filters that share a name
+- A) Number them like downloaded files (`x`, `x (1)`, `x (2)`) in discover, plan, backup and import, and report each rename
+- B) Treat duplicates as an error everywhere
+
+[Suggested]: B
+[Justification]: Live test with two throwaway filters: Proton accepts two filters with one name, so duplicates can arise outside this tool. An error would also stop `backup`, and with it `apply` and `restore`, which depend on a snapshot first (FR-BAK.1, FR-BAK.4). `proton-cli` has no rename, so a live rename would be delete plus create (FR-DECL.4); numbering only changes how the tool names them.
+[Answer]: A — the user chose download-style numbering with the renames reported.

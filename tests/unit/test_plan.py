@@ -292,7 +292,12 @@ def test_plan_audits_clean_with_counts_only(
     (line,) = audit_lines(work_account)
     assert result.outcome == "clean"
     assert (line["kind"], line["outcome"]) == ("check", "clean")
-    assert line["detail"] == {"entries": 0, "missing_targets": 0, "flags": 0}
+    assert line["detail"] == {
+        "entries": 0,
+        "missing_targets": 0,
+        "flags": 0,
+        "renamed": 0,
+    }
 
 
 def test_plan_audits_drift_and_changes_nothing(
@@ -307,6 +312,7 @@ def test_plan_audits_drift_and_changes_nothing(
         "entries": 2,
         "missing_targets": 0,
         "flags": 0,
+        "renamed": 0,
     }
     assert fake_proton.filters == before
     assert {c.path[-1] for c in fake_proton.calls} <= {"get", "list", "--version"}
@@ -336,8 +342,7 @@ def test_plan_does_not_audit_when_proton_cannot_be_read(
     client: ProtonClient, fake_proton: FakeProton, work_account: AccountPaths
 ) -> None:  # BR-13
     write_declared(work_account, state("a"))
-    fake_proton.add_filter("dup")
-    fake_proton.add_filter("dup")
+    fake_proton.failures["mail settings filters list"] = (5, "network")
     with pytest.raises(ClientError):
         plan(work_account, client)
     assert not work_account.audit_log.exists()
@@ -364,4 +369,31 @@ def test_plan_lists_missing_targets_from_the_account(
         "entries": 2,
         "missing_targets": 1,
         "flags": 0,
+        "renamed": 0,
     }
+
+
+def test_plan_reports_renamed_duplicates_without_calling_them_drift(
+    client: ProtonClient, fake_proton: FakeProton, work_account: AccountPaths
+) -> None:  # Unit 4 BR-2, BR-13
+    fake_proton.add_filter("a", "keep;")
+    fake_proton.add_filter("a", "keep;")
+    write_declared(work_account, state("a", "a (1)"))
+    result = plan(work_account, client)
+    assert result.outcome == "clean"
+    assert [(r.original, r.name) for r in result.renamed] == [("a", "a (1)")]
+    assert audit_lines(work_account)[0]["detail"] == {
+        "entries": 0,
+        "missing_targets": 0,
+        "flags": 0,
+        "renamed": 1,
+    }
+
+
+def test_an_unreadable_target_wins_over_a_missing_target() -> None:  # BR-10, BR-11
+    declared = state(
+        ("a", FILEINTO.format("Gone"), True),
+        ("b", 'require ["fileinto"];\nfileinto "${x}";', True),
+    )
+    with pytest.raises(ValidationError, match="'b'"):
+        diff(declared, state(live=True), frozenset())

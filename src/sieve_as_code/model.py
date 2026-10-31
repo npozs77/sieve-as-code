@@ -40,8 +40,20 @@ class FilterOrder:
 
 
 @dataclass(frozen=True)
+class Rename:
+    """A live filter shown under a numbered name because another shares its name."""
+
+    original: str
+    name: str
+
+
+@dataclass(frozen=True)
 class FilterSet:
-    """Filters in execution order with their order: declared, live or snapshot state."""
+    """Filters in execution order with their order: declared, live or snapshot state.
+
+    `renames` is non-empty only for live state with duplicate names.
+    """
 
     filters: tuple[Filter, ...]
     order: FilterOrder
+    renames: tuple[Rename, ...] = ()

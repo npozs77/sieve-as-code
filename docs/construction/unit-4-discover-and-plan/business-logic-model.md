@@ -18,10 +18,9 @@ ProtonClient
     ▼
 [2] get_filter per listed filter                  (BR-1)
     ▼
-[3] duplicate names                               (BR-2)
-    │        └─[dup] ClientError
+[3] number duplicate names, record renames        (BR-2)
     ▼
-FilterSet(filters in live order, FilterOrder)
+FilterSet(filters in live order, FilterOrder, renames)
 ```
 
 `discover_targets(client)` → `list_folders` + `list_labels` → `frozenset` of each target's `name` and `path` (BR-10, BR-16).
@@ -76,7 +75,8 @@ Stated once in `business-rules.md`; cited here by ID.
 ## Data Structures
 
 ```
-FilterSet(filters: tuple[Filter, ...], order: FilterOrder)       — model.py (new, shared)
+Rename(original: str, name: str)                                 — model.py
+FilterSet(filters: tuple[Filter, ...], order: FilterOrder, renames: tuple[Rename, ...] = ())   — model.py (shared)
 
 discover(client: ProtonClient) -> FilterSet                       ★ live.py
 discover_targets(client: ProtonClient) -> frozenset[str]          live.py
@@ -94,7 +94,8 @@ MissingTarget(name: str, used_by: tuple[str, ...])
 Flag(name: str, extension: str)
 PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry, ...],
            reorder: Reorder | None, flags: tuple[Flag, ...],
-           informational: tuple[str, ...], outcome: "clean" | "drift")
+           informational: tuple[str, ...], renamed: tuple[Rename, ...],
+           outcome: "clean" | "drift")
 ```
 
 `diff` reads each declared filter's facts via `script_facts`; `plan` maps any `ValidationError` to the `invalid` audit line. `enabled` on a `create` entry is the declared value; on an `enabled` entry the new value; `live_id` is set for every kind except `create`. `outcome` never holds `invalid` (that is the raised error).
@@ -106,7 +107,6 @@ PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry,
 | Step | Condition | Response |
 |------|-----------|----------|
 | Discover 1–2 | Listing incomplete, bad output, rejected command | `ClientError` from Unit 2, unchanged |
-| Discover 3 | Duplicate live name (BR-2) | `ClientError` naming the name |
 | Plan 1 | Declared files invalid | `ValidationError` from Unit 3; audit `invalid` |
 | Plan 3 | Unreadable `fileinto` target (BR-11) | `ValidationError` with filter and line; audit `invalid` |
 | Plan 5 | Audit write fails | `SieveAsCodeError` from Unit 1; no result returned |
@@ -128,7 +128,8 @@ PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry,
 | `fileinto "${folder}";` in an enabled filter | `invalid` (BR-11) |
 | same in a disabled filter | ignored |
 | `require ["vnd.proton.expire"]` on an unchanged filter | no flag (BR-12) |
-| two live filters named `x` | `ClientError` (BR-2) |
+| two live filters named `x` | `x`, `x (1)`; one rename reported; `clean` if nothing else (BR-2) |
+| live `x`, `x`, `x (1)` | `x`, `x (2)`, `x (1)` (BR-2) |
 | zero declared and zero live | `clean` |
 
 ---
@@ -141,7 +142,7 @@ PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry,
 - Unit 3: `load_declared`, `normalize_whitespace`.
 
 ### Provides
-- Unit 5, 7, 8: `discover` → `FilterSet`.
+- Unit 5, 7, 8: `discover` → `FilterSet` with numbered names and `renames`; each reports the renames.
 - Unit 6: `plan`, `diff`, `PlanResult`; `restore` diffs a snapshot's `FilterSet` against live with `diff`. Missing targets carry the name only — Unit 6 decides whether `apply` creates a folder or a label.
 - Unit 9: `discover`, `plan`; prints `FilterSet` with `render`.
 
@@ -154,7 +155,7 @@ Additions to earlier units (no rule changes there): `FilterSet` in `model.py`; `
 | BR/Property | Test Type | Assertion | Planned File |
 |-------------|-----------|-----------|--------------|
 | BR-1, BR-16 | Unit | fake `proton`: filters returned in live order with ids; only list/get calls made | `tests/unit/test_live.py` |
-| BR-2 | Unit | duplicate names → `ClientError` naming the name | `tests/unit/test_live.py` |
+| BR-2 | Unit + PBT | duplicates numbered and reported; taken numbers skipped; PBT: names unique, first keeps its name, ids and order unchanged | `tests/unit/test_live.py` |
 | BR-10 (`discover_targets`) | Unit | folders and labels, name and path both present | `tests/unit/test_live.py` |
 | BR-3 to BR-7 | Unit | one case per entry kind; informational for disabled live-only | `tests/unit/test_plan.py` |
 | BR-4 | PBT | adding tabs or trailing whitespace to a script never creates a `content` entry | `tests/unit/test_plan.py` |
@@ -167,15 +168,16 @@ Additions to earlier units (no rule changes there): `FilterSet` in `model.py`; `
 | BR-12 | Unit | flag only with a write entry; outcome unchanged by flags | `tests/unit/test_plan.py` |
 | BR-13 | Unit | audit line per outcome holds counts only; `invalid` audited; `ClientError` not audited | `tests/unit/test_plan.py` |
 | BR-14 | Unit | entry order groups | `tests/unit/test_plan.py` |
+| BR-2, BR-13 | Unit | renames reported by `plan`, counted in the audit line, not drift | `tests/unit/test_plan.py` |
 | Error: audit failure | Unit | `SieveAsCodeError` raised | `tests/unit/test_plan.py` |
 
 Test-design lenses:
 
 | Group | Boundary | Parity | Derived | Emergent | Invariants |
 |-------|----------|--------|---------|----------|------------|
-| Discover (BR-1, 2, 16) | ✔ zero filters, one filter | ✔ list vs get name/enabled | ✔ order = names in list order | waived: no composition | ✔ read-only calls only |
+| Discover (BR-1, 2, 16) | ✔ zero filters, one filter | waived: `get` supplies name and enabled; `list` supplies ids and order only | ✔ order = names in list order | waived: no composition | ✔ read-only calls only |
 | Entries (BR-3–7, 14) | ✔ both empty, case-different names | ✔ content vs enabled on one filter | ✔ live-only = live − declared | ✔ content × enabled × reorder together | ✔ NFR-REL.1 model-based PBT |
 | Reorder (BR-8, 9) | ✔ one common filter, creates at ends | ✔ declared vs live restricted | ✔ restriction to common | ✔ create × live-only × reorder | ✔ one entry PBT |
-| Targets and flags (BR-10–12, 17) | ✔ empty script, built-in case | ✔ enabled vs disabled filter | ✔ missing = used − known | ✔ missing target × invalid variable: invalid wins | ✔ flags never change outcome |
+| Targets and flags (BR-10–12, 17) | ✔ empty script, built-in case | ✔ enabled vs disabled filter | ✔ missing = used − known | ✔ missing target × unreadable target: error wins (`test_an_unreadable_target_wins_*`) | ✔ flags never change outcome |
 
 Coverage: MVP — every BR tested, PBT for invariants, error cases above; the 90% line target applies.

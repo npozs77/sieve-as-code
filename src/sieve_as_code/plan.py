@@ -13,7 +13,7 @@ from sieve_as_code.declared import (
     script_facts,
 )
 from sieve_as_code.live import discover, discover_targets
-from sieve_as_code.model import Filter, FilterSet, ValidationError
+from sieve_as_code.model import Filter, FilterSet, Rename, ValidationError
 from sieve_as_code.settings import AccountPaths
 
 # BR-10: a superset of Proton's built-in mailboxes, so a built-in is never reported
@@ -70,10 +70,11 @@ class PlanResult:
     reorder: Reorder | None
     flags: tuple[Flag, ...]
     informational: tuple[str, ...]
+    renamed: tuple[Rename, ...] = ()
 
     @property
     def outcome(self) -> Literal["clean", "drift"]:
-        """BR-13: flags and informational names are not drift."""
+        """BR-13: flags, informational names and renames are not drift."""
         drift = self.missing_targets or self.entries or self.reorder
         return "drift" if drift else "clean"
 
@@ -181,6 +182,7 @@ def diff(declared: FilterSet, live: FilterSet, targets: frozenset[str]) -> PlanR
         reorder=_reorder(declared, live),
         flags=_flags(changes, facts),
         informational=quiet,
+        renamed=live.renames,
     )
 
 
@@ -201,6 +203,7 @@ def plan(paths: AccountPaths, client: ProtonClient) -> PlanResult:
             "entries": len(result.entries) + (result.reorder is not None),
             "missing_targets": len(result.missing_targets),
             "flags": len(result.flags),
+            "renamed": len(result.renamed),
         },
     )
     return result

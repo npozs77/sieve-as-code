@@ -7,7 +7,7 @@ Acceptance criteria cite requirement IDs; they do not restate them.
 | ID | Story | Acceptance |
 |---|---|---|
 | US-1.1 | As a Filter Maintainer, I want to import my live filters into YAML files so that my existing set becomes the source of truth. | One file per filter plus the order file; differing local files need `--force` and show a diff (FR-DISC.2, FR-DECL.1–3) |
-| US-1.2 | As a Filter Maintainer, I want to view live filters without changing anything so that I can inspect my account safely. | Read-only; duplicate live names are an error (FR-DISC.1, FR-PLAN.6) |
+| US-1.2 | As a Filter Maintainer, I want to view live filters without changing anything so that I can inspect my account safely. | Read-only; duplicate live names are numbered and reported (FR-DISC.1, FR-PLAN.6) |
 | US-1.3 | As a Filter Maintainer, I want to import plain `.sieve` files so that I can bring in scripts written elsewhere. | File name becomes filter name (FR-DISC.3) |
 
 ## Epic 2 — Changing filters

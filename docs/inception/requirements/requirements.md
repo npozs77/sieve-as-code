@@ -57,7 +57,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-DISC.1 | `discover` reads all live filters (content, `enabled`, order) via `proton-cli`, read-only, and prints them in the declarative format. Two live filters sharing a name are an error, not collapsed. | Must |
+| FR-DISC.1 | `discover` reads all live filters (content, `enabled`, order) via `proton-cli`, read-only, and prints them in the declarative format. Live filters sharing a name are shown under numbered names: the first keeps its name, later ones become `name (1)`, `name (2)`, skipping a number a real filter uses; nothing in Proton is renamed and every rename is reported (RVQ-Q27). `plan`, `backup` and `import` use the same names. | Must |
 | FR-DISC.2 | `import [NAME]` writes live filters into the declared files. Where local files already exist and differ from live, it prints the local-vs-live diff and refuses to overwrite without `--force`. Local-only filters are never deleted (RVQ-Q5). | Must |
 | FR-DISC.3 | `import` also reads plain `.sieve` files as filters, using the file name as the filter name (RVQ-Q17). | Should |
 

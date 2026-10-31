@@ -38,6 +38,7 @@ Also planned: `retroactive-status` and `retroactive-audit`, and a Python API wit
 Intended behaviour:
 - `plan` is the drift detector and reports structure problems in the declared files before anything is written.
 - Every write needs a preceding plan and `--yes`; a snapshot is taken first.
+- Live filters that share a name are shown as `name`, `name (1)`, … and the renames are reported; nothing in Proton is renamed.
 - A live-only filter is disabled, never deleted, unless you explicitly override.
 - `apply` stops at the first failure and reports what succeeded, failed and was not attempted; there is no automatic rollback, `restore` is the way back.
 - Every write and check is appended to a local audit log (names and counts, never scripts).

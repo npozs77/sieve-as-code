@@ -117,7 +117,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | ID | Requirement |
 |---|---|
 | NFR-SAFE.1 | No write to Proton occurs without a preceding plan output and an explicit `--yes` (or the typed confirmation of FR-RETRO.3). |
-| NFR-SAFE.2 | No filter content, sender or domain list is written to the audit log, logs or error messages. Audit lines hold names, counts, action, outcome and timestamp only (RVQ-Q10). |
+| NFR-SAFE.2 | No filter content, sender or domain list is written to the audit log or logs. Terminal error messages carry only the first line of `proton`'s own diagnostic, capped at 200 characters (RVQ-Q25). Audit lines hold names, counts, action, outcome and timestamp only (RVQ-Q10). |
 | NFR-SAFE.3 | The audit log is append-only JSONL: timestamp, kind (`write` or `check`), outcome, detail. |
 | NFR-REL.1 | Re-running `apply` with no changes produces an empty plan and no writes. |
 | NFR-REL.2 | An active `proton-cli` session is checked before any command that calls `proton-cli`; its absence fails loudly and never prompts interactively (`--no-input`). |

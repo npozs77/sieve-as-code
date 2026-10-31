@@ -11,6 +11,17 @@ class ValidationError(SieveAsCodeError):
     """Bad declared input, account name or configuration (CLI exit code 2)."""
 
 
+class ClientError(SieveAsCodeError):
+    """`proton` could not be run, refused a command, or answered unexpectedly.
+
+    `exit_code` is the process exit code, or None when no process answered.
+    """
+
+    def __init__(self, message: str, exit_code: int | None = None) -> None:
+        super().__init__(message)
+        self.exit_code = exit_code
+
+
 @dataclass(frozen=True)
 class Filter:
     """One Proton filter; `live_id` is None for declared-only filters. BR-8."""

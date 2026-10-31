@@ -49,14 +49,13 @@ Proton's web UI gives filters no version history, no diff, no audit trail, and n
 
 ## Roadmap
 
-1. Extract from the private codebase: map the shared utilities (`shared/`) the filter code uses first; publish a clean history only (never the private repo's history or docs).
-2. Per-filter size limit check in validation.
-3. Flag destructive Proton extensions (`vnd.proton.expire`) in the plan.
-4. Backup checksums, a versioned format, and backup-to-backup diff.
-5. Disable instead of delete on apply; cleanup only with a verified backup.
-6. Refuse to drop live-only filters without an explicit override.
-7. Document that a rename is a delete plus a create.
-8. Read other tools' `.sieve` files as-is on import.
+1. Per-filter size limit check in validation.
+2. Flag destructive Proton extensions (`vnd.proton.expire`) in the plan.
+3. Backup checksums, a versioned format, and backup-to-backup diff.
+4. Disable instead of delete on apply; cleanup only with a verified backup.
+5. Refuse to drop live-only filters without an explicit override.
+6. Document that a rename is a delete plus a create.
+7. Read other tools' `.sieve` files as-is on import.
 
 ## Prior art
 
@@ -73,5 +72,5 @@ None combines a declarative source, plan/diff, backup/restore and the safeguards
 
 - Licence: MIT (decided).
 - Package and CLI names.
-- Where the specs live for this repo (lean, public) versus the private codebase that consumes it at a pinned version.
+- Where the specs live for this repo (lean, public).
 - Python version and packaging (`uv`).

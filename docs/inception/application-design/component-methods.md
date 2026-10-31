@@ -8,10 +8,10 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | model | `FilterOrder(sequence)` | Frozen dataclass of names |
 | settings | `resolve_account(name)`, `account_paths(account)`, `proton_cli()` | Read env vars; validate account name; build per-account paths (Unit 1 design) |
 | audit | `record_write(audit_log, outcome, detail)`, `record_check(audit_log, outcome, detail)` | Append one line (Unit 1 design) |
-| client | `check_session()`, `check_version()`, `check_account(account)` | Preconditions (NFR-REL.2/3, FR-ACCT.4); writes the fingerprint marker on first use |
-| client | `list_filters()`, `get_filter(ref)`, `create_filter(...)`, `update_filter(...)`, `delete_filter(...)`, `enable_filter(...)`, `disable_filter(...)`, `reorder_filters(...)` | Filter operations; scripts via stdin |
-| client | `list_labels()`, `list_folders()`, `create_label(...)`, `create_folder(...)` | Targets |
-| client | `list_messages()`, `apply_retroactively(live_id)` | Retroactive support |
+| client | `connect(paths)` | Version, session and account-fingerprint checks (NFR-REL.2/3, FR-ACCT.4); returns `ProtonClient` (Unit 2 design) |
+| client | `ProtonClient.list_filters()`, `get_filter(...)`, `create_filter(...)`, `update_filter(...)`, `delete_filter(...)`, `enable_filter(...)`, `disable_filter(...)`, `reorder_filters(...)` | Filter operations; scripts via stdin |
+| client | `ProtonClient.list_labels()`, `list_folders()`, `create_label(...)`, `create_folder(...)` | Targets |
+| client | `ProtonClient.list_messages()`, `apply_retroactively(live_id)` | Retroactive support |
 | declared | `load_declared()` ★ | Parse files into filters and order |
 | declared | `validate_declared(filters, order)` ★ | Raise on any FR-DECL.5/6 failure |
 | declared | `render(filters, order)` | File contents; caller writes |

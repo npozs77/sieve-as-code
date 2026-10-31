@@ -18,6 +18,7 @@ sieve-as-code = "sieve_as_code.cli:main"
 [dependency-groups]
 dev = [
     "pytest==9.2.0",
+    "pytest-cov==7.1.0",
     "hypothesis==6.170.14",
     "ruff==0.17.3",
     "black==26.10.1",
@@ -31,6 +32,8 @@ packages = ["src/sieve_as_code"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
+pythonpath = ["."]
+addopts = "--cov=sieve_as_code --cov-report=term-missing:skip-covered --cov-fail-under=90"
 
 [tool.black]
 line-length = 88

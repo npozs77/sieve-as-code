@@ -50,7 +50,7 @@ No gaps. FR-ACCT.3 and FR-ACCT.4 belong to Units 9 and 2.
 
 - 49 tests pass on Python 3.12, 3.13 and 3.14; ruff, black, mypy (strict) and vulture are clean; `uv build` produces sdist and wheel.
 - Build and test: `uv sync && make quality`.
-- Coverage percentage not measured (no coverage plugin yet; the 90% target in the implementation plan is checked from Unit 4, where the 100% modules begin).
+- Coverage was not measured in this unit; `pytest-cov` and the 90% gate arrive with Unit 2.
 
 ## Implementation notes
 

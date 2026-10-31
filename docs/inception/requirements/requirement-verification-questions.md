@@ -129,7 +129,7 @@ Profile says `cli` + `library`. What is the public library API?
 - C) Other
 
 [Suggested]: A
-[Justification]: Profile `artifact_type: [cli, library]`; Concept Roadmap 1 says a private codebase consumes this "at a pinned version."
+[Justification]: Profile `artifact_type: [cli, library]`; programs import the package at a pinned version (FR-CLI.2).
 [Answer]: A — Documented functions for load/validate, plan, apply, import, backup, restore are the supported API; the CLI wraps them.
 
 ### Q15. Test strategy
@@ -146,7 +146,7 @@ Where do the SDD specs live for this public repo?
 - B) `docs/` kept untracked/private; only code and README published
 
 [Suggested]: A
-[Justification]: Concept Open items asks for "lean, public" specs here; Roadmap 1 says private history and docs must not be published, which concerns the private repo, not these.
+[Justification]: Concept Open items asks for lean, public specs here.
 [Answer]: A — `docs/` committed in this repo.
 
 ## Scope
@@ -226,3 +226,11 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: XDG is the Linux convention (also used by gh and uv on macOS) and splits user-authored files (config) from generated ones (state), in a few stdlib lines with no `platformdirs` dependency (NFR-DEP.1).
 [Answer]: A — as suggested; Windows unsupported.
+
+### Q25. Proton's diagnostic in error messages
+- A) A terminal error includes the first line of `proton`'s stderr (capped at 200 characters); the audit log and logs never do
+- B) Error messages never include `proton` output
+
+[Suggested]: A
+[Justification]: That line is `proton`'s only reason for rejecting a script (FR-APPLY.4) and the only way an operator can fix it; a cap limits length, not content, so the safeguard is where it goes: the terminal, never a file.
+[Answer]: A — as suggested.

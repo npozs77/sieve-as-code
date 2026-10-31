@@ -170,14 +170,20 @@ def _flags(
     )
 
 
-def diff(declared: FilterSet, live: FilterSet, targets: frozenset[str]) -> PlanResult:
-    """Pure diff of declared against live state. BR-3 to BR-15."""
-    facts = _facts(declared)
+def diff(
+    declared: FilterSet, live: FilterSet, targets: frozenset[str] | None
+) -> PlanResult:
+    """Pure diff of declared against live state. BR-3 to BR-15.
+
+    `targets=None` is snapshot mode: no target check, missing targets or flags. BR-19.
+    """
+    facts = _facts(declared) if targets is not None else {}
     live_by_name = {item.name: item for item in live.filters}
     changes = _entries(declared, live_by_name)
     extra, quiet = _live_only(declared, live)
+    known = targets or frozenset()
     return PlanResult(
-        missing_targets=_missing_targets(declared.order.sequence, facts, targets),
+        missing_targets=_missing_targets(declared.order.sequence, facts, known),
         entries=changes + extra,
         reorder=_reorder(declared, live),
         flags=_flags(changes, facts),

@@ -20,3 +20,4 @@
 | BR-16 | `plan` and `discover` use only `list_filters`, `get_filter`, `list_folders`, `list_labels`; no mutation, no `--dry-run`. | FR-PLAN.6 |
 | BR-17 | `script_facts(script) (in `declared.py`) returns the lower-cased `require` extensions and each `fileinto` mailbox with its line: the last argument before `;`, taken as a name when it is a quoted string without `${` (escapes `\\` and `\"` resolved), else unreadable. It never judges grammar (BR-18 of Unit 3). | FR-PLAN.3, FR-PLAN.5 |
 | BR-18 | `plan` called with `paths.account` different from `client.account` → `ValidationError` naming both; nothing is read or audited. | FR-ACCT.4 |
+| BR-19 | `diff(declared, live, None)` is snapshot mode: no BR-10/BR-11 target check and no BR-12 flags, so `missing_targets` and `flags` are empty and no unreadable target can raise; entries and reorder are unchanged. `live-only` entries carry no verb: `apply` disables them, `restore` (Unit 6) deletes them. | FR-BAK.4, FR-BAK.5 |

@@ -81,7 +81,7 @@ FilterSet(filters: tuple[Filter, ...], order: FilterOrder, renames: tuple[Rename
 discover(client: ProtonClient) -> FilterSet                       ★ live.py
 discover_targets(client: ProtonClient) -> frozenset[str]          live.py
 plan(paths: AccountPaths, client: ProtonClient) -> PlanResult     ★ plan.py
-diff(declared: FilterSet, live: FilterSet, targets: frozenset[str]) -> PlanResult   plan.py
+diff(declared: FilterSet, live: FilterSet, targets: frozenset[str] | None) -> PlanResult   plan.py   # None = snapshot mode (BR-19)
 script_facts(script: str) -> ScriptFacts                          declared.py (new)
 
 ScriptFacts(required: frozenset[str], mailboxes: tuple[Mailbox, ...])
@@ -170,6 +170,7 @@ Additions to earlier units (no rule changes there): `FilterSet` in `model.py`; `
 | BR-13 | Unit | audit line per outcome holds counts only; `invalid` audited; `ClientError` not audited | `tests/unit/test_plan.py` |
 | BR-14 | Unit | entry order groups | `tests/unit/test_plan.py` |
 | BR-18 | Unit | other account's paths → `ValidationError`, no audit | `tests/unit/test_plan.py` |
+| BR-19 | Unit | snapshot mode: unreadable target and expire do not raise or flag | `tests/unit/test_plan.py` |
 | BR-2, BR-13 | Unit | renames reported by `plan`, counted in the audit line, not drift | `tests/unit/test_plan.py` |
 | Error: audit failure | Unit | `SieveAsCodeError` raised | `tests/unit/test_plan.py` |
 

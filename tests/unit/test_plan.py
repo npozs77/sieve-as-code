@@ -399,6 +399,14 @@ def test_plan_refuses_a_client_connected_to_another_account(
     assert not work_account.audit_log.exists()
 
 
+def test_snapshot_mode_skips_target_and_flag_checks() -> None:  # BR-19
+    script = 'require ["fileinto","vnd.proton.expire"];\nfileinto "${x}";'
+    snapshot = state(("a", script, True))
+    result = diff(snapshot, state(live=True), None)
+    assert [(e.kind, e.name) for e in result.entries] == [("create", "a")]
+    assert result.missing_targets == () and result.flags == ()
+
+
 def test_an_unreadable_target_wins_over_a_missing_target() -> None:  # BR-10, BR-11
     declared = state(
         ("a", FILEINTO.format("Gone"), True),

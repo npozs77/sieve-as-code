@@ -20,7 +20,7 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | declared | `script_facts(script)` | Required extensions and `fileinto` mailboxes (Unit 4 design) |
 | live | `discover(client)` ★, `discover_targets(client)` | `FilterSet` of live filters in order, duplicate names numbered and listed in `renames`; known folder and label names (Unit 4 design) |
 | importer | `import_live(name, force)` ★, `import_sieve_files(paths)` ★ | Write declared files |
-| plan | `plan(paths, client)` ★, `diff(declared, live, targets)` | Audited `PlanResult` with typed entries, flags and renames; `diff` is pure (Unit 4 design) |
+| plan | `plan(paths, client)` ★, `diff(declared, live, targets)` | Audited `PlanResult` with typed entries, flags and renames; `diff` is pure, `targets=None` is snapshot mode (Unit 4 design) |
 | backup | `write_backup(...)` ★, `read_backup(ref)`, `diff_backups(a, b)` ★ | Snapshot handling |
 | apply | `apply_plan(result, confirmed, allow_delete)` ★ | `ApplyReport` |
 | restore | `restore(ref, confirmed)` ★ | `RestoreReport` |

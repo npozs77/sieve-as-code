@@ -13,6 +13,7 @@ from sieve_as_code.declared import (
     load_declared,
     normalize_whitespace,
     render,
+    script_facts,
     validate_declared,
 )
 from sieve_as_code.model import Filter, FilterOrder, ValidationError
@@ -425,3 +426,34 @@ def test_render_then_load_round_trips(
     }
     assert {f.name: f for f in loaded} == expected
     assert loaded_order == order
+
+
+def mailboxes(script: str) -> list[tuple[int, str | None]]:
+    return [(m.line, m.name) for m in script_facts(script).mailboxes]
+
+
+@pytest.mark.parametrize(
+    ("script", "expected"),
+    [
+        ('fileinto "A";', [(1, "A")]),
+        ('keep;\nfileinto :copy :create "B/C";', [(2, "B/C")]),
+        ('fileinto :flags ["x", "y"] "D";', [(1, "D")]),
+        ('fileinto "a\\"b\\\\c";', [(1, 'a"b\\c')]),
+        ('fileinto "${v}";', [(1, None)]),
+        ('fileinto :flags ["x"];', [(1, None)]),
+        ("fileinto text:\nX\n.\n;", [(1, None)]),
+        ('fileinto "A"; fileinto "B";', [(1, "A"), (1, "B")]),
+        ('# fileinto "no"\nif true { fileinto "yes"; }', [(2, "yes")]),
+        ('fileinto "unterminated', []),
+        ("keep;", []),
+    ],
+)
+def test_script_facts_reads_the_fileinto_mailbox(
+    script: str, expected: list[tuple[int, str | None]]
+) -> None:  # Unit 4 BR-17
+    assert mailboxes(script) == expected
+
+
+def test_script_facts_lists_required_extensions_lowercased() -> None:  # Unit 4 BR-17
+    facts = script_facts('require ["FileInto", "vnd.proton.expire"];\nrequire "copy";')
+    assert facts.required == {"fileinto", "vnd.proton.expire", "copy"}

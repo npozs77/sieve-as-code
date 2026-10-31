@@ -3,6 +3,7 @@
 import re
 import unicodedata
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -29,8 +30,24 @@ _TAG_EXTENSIONS = {"copy": "copy", "regex": "regex"}
 _WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
+@dataclass(frozen=True)
+class Mailbox:
+    """A `fileinto` target; `name` is None when it is not a plain quoted string."""
+
+    line: int
+    name: str | None
+
+
+@dataclass(frozen=True)
+class ScriptFacts:
+    """What `plan` needs from a script: `require` extensions and `fileinto` targets."""
+
+    required: frozenset[str]
+    mailboxes: tuple[Mailbox, ...]
+
+
 class _Scanner:
-    """One pass over a Sieve script for BR-16 and BR-17; never judges grammar."""
+    """One pass over a Sieve script for BR-16, BR-17 and facts; never judges grammar."""
 
     def __init__(self, text: str) -> None:
         self.text = text
@@ -41,6 +58,9 @@ class _Scanner:
         self.uses: list[tuple[str, int, str]] = []
         self.command_position = True
         self.in_require = False
+        self.mailbox_line: int | None = None
+        self.mailbox: str | None = None
+        self.mailboxes: list[Mailbox] = []
 
     def problem(self) -> str | None:
         """First certain error as `line N: ...`, or None."""
@@ -48,6 +68,7 @@ class _Scanner:
             found = self._step()
             if found:
                 return found
+        self._end_fileinto()
         if self.open:
             char, line = self.open[-1]
             return f"line {line}: unbalanced {char!r}"
@@ -74,6 +95,7 @@ class _Scanner:
         elif char in "}]":
             return self._close(char)
         elif char == ";":
+            self._end_fileinto()
             self.command_position = True
             self.in_require = False
         elif char == ":" and (tag := _WORD.match(text, pos + 1)):
@@ -105,11 +127,16 @@ class _Scanner:
             return f"line {start}: unterminated string"
         if self.in_require:
             self.required.add(text[self.pos + 1 : pos].lower())
+        if self.mailbox_line is not None:
+            value = text[self.pos + 1 : pos]
+            self.mailbox = None if "${" in value else re.sub(r"\\(.)", r"\1", value)
         self.pos = pos + 1
         self.command_position = False
         return None
 
     def _close(self, char: str) -> str | None:
+        if char == "]":
+            self.mailbox = None
         wanted = "{" if char == "}" else "["
         if not self.open or self.open[-1][0] != wanted:
             return f"line {self.line}: unbalanced {char!r}"
@@ -133,8 +160,19 @@ class _Scanner:
             if name in _COMMAND_EXTENSIONS:
                 self.uses.append((name, self.line, _COMMAND_EXTENSIONS[name]))
             self.in_require = name == "require"
+            if name == "fileinto":
+                self.mailbox_line, self.mailbox = self.line, None
+                self.command_position = False
+                return None
+        self.mailbox = None
         self.command_position = False
         return None
+
+    def _end_fileinto(self) -> None:
+        """Unit 4 BR-17: the last argument before `;` is the mailbox."""
+        if self.mailbox_line is not None:
+            self.mailboxes.append(Mailbox(self.mailbox_line, self.mailbox))
+            self.mailbox_line = None
 
     def _skip_text_block(self, rest_length: int) -> str | None:
         start = self.line
@@ -144,6 +182,7 @@ class _Scanner:
                 self.line += count
                 self.pos += rest_length + sum(len(item) + 1 for item in lines[:count])
                 self.pos += len(body_line)
+                self.mailbox = None
                 self.command_position = False
                 return None
         return f"line {start}: unterminated text: block"
@@ -152,6 +191,13 @@ class _Scanner:
 def _script_problem(script: str) -> str | None:
     """BR-16, BR-17, BR-18: a certain structural error in `script`, else None."""
     return _Scanner(script).problem()
+
+
+def script_facts(script: str) -> ScriptFacts:
+    """`require` extensions and `fileinto` targets of `script` (Unit 4 BR-17)."""
+    scanner = _Scanner(script)
+    scanner.problem()
+    return ScriptFacts(frozenset(scanner.required), tuple(scanner.mailboxes))
 
 
 def normalize_whitespace(script: str) -> str:

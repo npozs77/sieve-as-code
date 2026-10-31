@@ -6,6 +6,7 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 |---|---|---|
 | model | `Filter(name, raw_sieve, enabled, live_id)` | Frozen dataclass |
 | model | `FilterOrder(sequence)` | Frozen dataclass of names |
+| model | `FilterSet(filters, order)` | Frozen dataclass; declared, live or snapshot state (Unit 4 design) |
 | settings | `resolve_account(name)`, `account_paths(account)`, `proton_cli()` | Read env vars; validate account name; build per-account paths (Unit 1 design) |
 | audit | `record_write(audit_log, outcome, detail)`, `record_check(audit_log, outcome, detail)` | Append one line (Unit 1 design) |
 | client | `connect(paths)` | Version, session and account-fingerprint checks (NFR-REL.2/3, FR-ACCT.4); returns `ProtonClient` (Unit 2 design) |
@@ -16,9 +17,10 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | declared | `validate_declared(filters, order)` ★ | Raise on any FR-DECL.5/7 failure |
 | declared | `render(filters, order, paths)` | File contents; caller writes |
 | declared | `normalize_whitespace(script)` | Script as written to files |
-| live | `discover()` ★ | Live filters and order |
+| declared | `script_facts(script)` | Required extensions and `fileinto` mailboxes (Unit 4 design) |
+| live | `discover(client)` ★, `discover_targets(client)` | `FilterSet` of live filters in order; known folder and label names (Unit 4 design) |
 | importer | `import_live(name, force)` ★, `import_sieve_files(paths)` ★ | Write declared files |
-| plan | `plan(declared, live)` ★ | `PlanResult` with typed entries and flags |
+| plan | `plan(paths, client)` ★, `diff(declared, live, targets)` | Audited `PlanResult` with typed entries and flags; `diff` is pure (Unit 4 design) |
 | backup | `write_backup(...)` ★, `read_backup(ref)`, `diff_backups(a, b)` ★ | Snapshot handling |
 | apply | `apply_plan(result, confirmed, allow_delete)` ★ | `ApplyReport` |
 | restore | `restore(ref, confirmed)` ★ | `RestoreReport` |

@@ -37,3 +37,11 @@ class FilterOrder:
     """Filter names in execution order. BR-8."""
 
     sequence: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class FilterSet:
+    """Filters in execution order with their order: declared, live or snapshot state."""
+
+    filters: tuple[Filter, ...]
+    order: FilterOrder

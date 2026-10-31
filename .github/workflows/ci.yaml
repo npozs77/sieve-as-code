@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Forbidden personal files
+        run: |
+          if git ls-files | grep -E '(^|/)(account\.id|\.env)$|^filters/|^order\.yaml$'; then
+            echo "::error::Personal config tracked in git: only *.example templates are allowed"
+            exit 1
+          fi
+
+      - name: Secret and PII scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  quality:
+    # Skipped until the package exists (Unit 1 adds pyproject.toml and the Makefile).
+    if: hashFiles('pyproject.toml') != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.3
+
+      - name: Install dependencies
+        run: uv sync --python ${{ matrix.python-version }}
+
+      - name: Quality checks
+        run: make quality
+
+  ci-ok:
+    # The single required status check for branch protection.
+    needs: [guard, quality]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required jobs passed or were skipped
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            exit 1
+          fi

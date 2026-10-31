@@ -6,8 +6,8 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 |---|---|---|
 | model | `Filter(name, raw_sieve, enabled, live_id)` | Frozen dataclass |
 | model | `FilterOrder(sequence)` | Frozen dataclass of names |
-| settings | `resolve_account(name)`, `filters_dir(account)`, `state_dir(account)`, `proton_cli()` | Read env vars; validate account name |
-| audit | `record_write(action, detail)`, `record_check(outcome, detail)` | Append one line |
+| settings | `resolve_account(name)`, `account_paths(account)`, `proton_cli()` | Read env vars; validate account name; build per-account paths (Unit 1 design) |
+| audit | `record_write(audit_log, outcome, detail)`, `record_check(audit_log, outcome, detail)` | Append one line (Unit 1 design) |
 | client | `check_session()`, `check_version()`, `check_account(account)` | Preconditions (NFR-REL.2/3, FR-ACCT.4); writes the fingerprint marker on first use |
 | client | `list_filters()`, `get_filter(ref)`, `create_filter(...)`, `update_filter(...)`, `delete_filter(...)`, `enable_filter(...)`, `disable_filter(...)`, `reorder_filters(...)` | Filter operations; scripts via stdin |
 | client | `list_labels()`, `list_folders()`, `create_label(...)`, `create_folder(...)` | Targets |

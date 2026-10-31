@@ -217,3 +217,12 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: The run acts on the live script, and the preview is built from it, so the preview is accurate; the typed confirmation already gates the run. Blocking would stop a deliberate run of a live filter while other filters are drifting.
 [Answer]: A — as suggested.
+
+### Q24. Default directories and platforms
+- A) Defaults follow XDG: filters under `$XDG_CONFIG_HOME/sieve-as-code` (else `~/.config/sieve-as-code`), state under `$XDG_STATE_HOME/sieve-as-code` (else `~/.local/state/sieve-as-code`); the env vars override; Linux and macOS only, Windows unsupported
+- B) No default; the env vars are required
+- C) One default root under `~/.local/share`
+
+[Suggested]: A
+[Justification]: XDG is the Linux convention (also used by gh and uv on macOS) and splits user-authored files (config) from generated ones (state), in a few stdlib lines with no `platformdirs` dependency (NFR-DEP.1).
+[Answer]: A — as suggested; Windows unsupported.

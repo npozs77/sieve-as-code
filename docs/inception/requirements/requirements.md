@@ -108,7 +108,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 |---|---|---|
 | FR-CLI.1 | The CLI `sieve-as-code` provides `discover`, `plan`, `apply`, `import`, `backup`, `backup-diff`, `restore`, `apply-retroactive`, `retroactive-status`, `retroactive-audit` (RVQ-Q13). | Must |
 | FR-CLI.2 | The package `sieve_as_code` exposes a documented function for every CLI command (discover, plan, apply, import, backup, backup-diff, restore, and the three retroactive commands) plus load/validate; the CLI is a thin wrapper over them (RVQ-Q14). Anything not documented is internal. | Must |
-| FR-CLI.3 | Configuration comes from environment variables: `SIEVE_AS_CODE_FILTERS_DIR` (root; per account `<root>/<account>/filters/*.yaml` and `<root>/<account>/order.yaml`), `SIEVE_AS_CODE_STATE_DIR` (root; per account `<root>/<account>/backups/`, `retroactive/`, `audit.log`), `SIEVE_AS_CODE_ACCOUNT` (default account) and `SIEVE_AS_CODE_PROTON_CLI` (binary, default `proton`) (RVQ-Q11, RVQ-Q18). The repository ships a `.env.example` listing them; the tool has no `.env` loader (RVQ-Q22). | Must |
+| FR-CLI.3 | Configuration comes from environment variables: `SIEVE_AS_CODE_FILTERS_DIR` (default `$XDG_CONFIG_HOME/sieve-as-code`, else `~/.config/sieve-as-code`; root; per account `<root>/<account>/filters/*.yaml` and `<root>/<account>/order.yaml`), `SIEVE_AS_CODE_STATE_DIR` (default `$XDG_STATE_HOME/sieve-as-code`, else `~/.local/state/sieve-as-code`; root; per account `<root>/<account>/backups/`, `retroactive/`, `audit.log`), `SIEVE_AS_CODE_ACCOUNT` (default account) and `SIEVE_AS_CODE_PROTON_CLI` (binary, default `proton`) (RVQ-Q11, RVQ-Q18, RVQ-Q24). The repository ships a `.env.example` listing them; the tool has no `.env` loader (RVQ-Q22). | Must |
 
 ---
 
@@ -161,6 +161,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 - Mail features beyond filters (aliases, DNS, search, reading mail).
 - A structured filter vocabulary; a filter's content is its Sieve script.
 - Live-account tests in CI.
+- Windows (Linux and macOS only; RVQ-Q24).
 
 ---
 

@@ -9,7 +9,7 @@
 **Capability**: FR-CLI.3, FR-ACCT.1, FR-ACCT.2, FR-ACCT.5, NFR-SAFE.2, NFR-SAFE.3, NFR-DEP.1, CON-5
 **Components**: Model, Settings, Audit
 **Delivers**:
-- `pyproject.toml`, `uv.lock`, `.env.example`, `.gitignore` entries, ruff/black/mypy/vulture config
+- `pyproject.toml`, `uv.lock`, `Makefile` (`quality`, `test`, `build`), `.env.example`, `.gitignore` entries, ruff/black/mypy/vulture config
 - `model.py`, `settings.py`, `audit.py`
 - Unit tests for each
 

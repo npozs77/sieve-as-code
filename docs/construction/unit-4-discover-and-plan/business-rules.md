@@ -19,3 +19,4 @@
 | BR-15 | `diff` is pure: same inputs → same result, no I/O. Equal declared and live (BR-3, BR-4) → `clean`, empty. | NFR-REL.1, FR-PLAN.6 |
 | BR-16 | `plan` and `discover` use only `list_filters`, `get_filter`, `list_folders`, `list_labels`; no mutation, no `--dry-run`. | FR-PLAN.6 |
 | BR-17 | `script_facts(script) (in `declared.py`) returns the lower-cased `require` extensions and each `fileinto` mailbox with its line: the last argument before `;`, taken as a name when it is a quoted string without `${` (escapes `\\` and `\"` resolved), else unreadable. It never judges grammar (BR-18 of Unit 3). | FR-PLAN.3, FR-PLAN.5 |
+| BR-18 | `plan` called with `paths.account` different from `client.account` → `ValidationError` naming both; nothing is read or audited. | FR-ACCT.4 |

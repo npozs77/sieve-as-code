@@ -107,6 +107,7 @@ PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry,
 | Step | Condition | Response |
 |------|-----------|----------|
 | Discover 1–2 | Listing incomplete, bad output, rejected command | `ClientError` from Unit 2, unchanged |
+| Plan 0 | Client and paths name different accounts (BR-18) | `ValidationError`; no audit |
 | Plan 1 | Declared files invalid | `ValidationError` from Unit 3; audit `invalid` |
 | Plan 3 | Unreadable `fileinto` target (BR-11) | `ValidationError` with filter and line; audit `invalid` |
 | Plan 5 | Audit write fails | `SieveAsCodeError` from Unit 1; no result returned |
@@ -168,6 +169,7 @@ Additions to earlier units (no rule changes there): `FilterSet` in `model.py`; `
 | BR-12 | Unit | flag only with a write entry; outcome unchanged by flags | `tests/unit/test_plan.py` |
 | BR-13 | Unit | audit line per outcome holds counts only; `invalid` audited; `ClientError` not audited | `tests/unit/test_plan.py` |
 | BR-14 | Unit | entry order groups | `tests/unit/test_plan.py` |
+| BR-18 | Unit | other account's paths → `ValidationError`, no audit | `tests/unit/test_plan.py` |
 | BR-2, BR-13 | Unit | renames reported by `plan`, counted in the audit line, not drift | `tests/unit/test_plan.py` |
 | Error: audit failure | Unit | `SieveAsCodeError` raised | `tests/unit/test_plan.py` |
 

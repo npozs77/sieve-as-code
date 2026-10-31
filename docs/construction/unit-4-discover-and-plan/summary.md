@@ -9,7 +9,7 @@
 | `src/sieve_as_code/declared.py` | Added `script_facts`, `ScriptFacts`, `Mailbox`; `_Scanner` records `fileinto` mailboxes |
 | `src/sieve_as_code/model.py` | Added `FilterSet`, `Rename` |
 | `tests/unit/test_live.py` | 8 tests |
-| `tests/unit/test_plan.py` | 32 tests |
+| `tests/unit/test_plan.py` | 33 tests |
 | `tests/unit/test_declared.py` | `script_facts` cases added |
 | `README.md` | Status line |
 
@@ -40,13 +40,14 @@ No gaps.
 | BR-10 | `_missing_targets`, `discover_targets` | `test_missing_targets_*`, `test_built_in_*`, `test_existing_folders_*`, `test_targets_of_disabled_*`, `test_targets_hold_*` |
 | BR-11 | `_facts` | `test_unreadable_target_*`, `test_plan_audits_unreadable_*` |
 | BR-12 | `_flags` | `test_destructive_extension_*`, `test_flags_do_not_change_the_outcome` |
+| BR-18 | `plan` | `test_plan_refuses_a_client_connected_to_another_account` |
 | BR-13 | `plan`, `PlanResult.outcome` | `test_plan_audits_*`, `test_plan_does_not_audit_*`, `test_plan_raises_when_the_audit_*` |
 | BR-15 | `diff` | `test_diff_of_a_state_with_itself_*` (PBT), `test_applying_a_plan_leaves_nothing_to_plan` (model-based PBT) |
 | BR-17 | `declared.py:script_facts` | `test_declared.py`: `test_script_facts_*` |
 
 ## Tests
 
-- 262 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
+- 263 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
 - Build and test: `uv sync && make quality`.
 
 ## Implementation notes

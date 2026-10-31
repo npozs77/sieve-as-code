@@ -188,6 +188,11 @@ def diff(declared: FilterSet, live: FilterSet, targets: frozenset[str]) -> PlanR
 
 def plan(paths: AccountPaths, client: ProtonClient) -> PlanResult:
     """Diff the account's declared files against Proton and audit the outcome. BR-13."""
+    if paths.account != client.account:
+        raise ValidationError(
+            f"paths are for account {paths.account!r} but the client is connected "
+            f"to {client.account!r}"
+        )
     try:
         filters, order = load_declared(paths)
         declared = FilterSet(tuple(filters), order)

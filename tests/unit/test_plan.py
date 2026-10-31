@@ -390,6 +390,15 @@ def test_plan_reports_renamed_duplicates_without_calling_them_drift(
     }
 
 
+def test_plan_refuses_a_client_connected_to_another_account(
+    client: ProtonClient, work_account: AccountPaths
+) -> None:  # BR-18
+    other = replace(work_account, account="other")
+    with pytest.raises(ValidationError, match="'other'"):
+        plan(other, client)
+    assert not work_account.audit_log.exists()
+
+
 def test_an_unreadable_target_wins_over_a_missing_target() -> None:  # BR-10, BR-11
     declared = state(
         ("a", FILEINTO.format("Gone"), True),

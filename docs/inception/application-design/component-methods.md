@@ -12,9 +12,10 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | client | `ProtonClient.list_filters()`, `get_filter(...)`, `create_filter(...)`, `update_filter(...)`, `delete_filter(...)`, `enable_filter(...)`, `disable_filter(...)`, `reorder_filters(...)` | Filter operations; scripts via stdin |
 | client | `ProtonClient.list_labels()`, `list_folders()`, `create_label(...)`, `create_folder(...)` | Targets |
 | client | `ProtonClient.list_messages()`, `apply_retroactively(live_id)` | Retroactive support |
-| declared | `load_declared()` ★ | Parse files into filters and order |
-| declared | `validate_declared(filters, order)` ★ | Raise on any FR-DECL.5/6 failure |
-| declared | `render(filters, order)` | File contents; caller writes |
+| declared | `load_declared(paths)` ★ | Parse files into filters and order, validated |
+| declared | `validate_declared(filters, order)` ★ | Raise on any FR-DECL.5/7 failure |
+| declared | `render(filters, order, paths)` | File contents; caller writes |
+| declared | `normalize_whitespace(script)` | Script as written to files |
 | live | `discover()` ★ | Live filters and order |
 | importer | `import_live(name, force)` ★, `import_sieve_files(paths)` ★ | Write declared files |
 | plan | `plan(declared, live)` ★ | `PlanResult` with typed entries and flags |

@@ -234,3 +234,11 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: That line is `proton`'s only reason for rejecting a script (FR-APPLY.4) and the only way an operator can fix it; a cap limits length, not content, so the safeguard is where it goes: the terminal, never a file.
 [Answer]: A — as suggested.
+
+### Q26. Plan-time Sieve structure check
+- A) `plan` and `apply` validate script structure locally (certain errors only); Proton stays the authority
+- B) Scripts stay opaque; Proton's rejection at write time is the only check
+
+[Suggested]: B
+[Justification]: Live check against `proton` 4.3.0: all bad scripts (missing brace, missing `require`, unknown extension) fail only at create with `[HTTP 400] 2001: Invalid filter representation` and no detail, and `--dry-run` accepts them, so a bad file means a half-applied run (FR-APPLY.4). A full Sieve grammar would duplicate Proton's, so the local check is limited to errors that are certain, never rejecting what it cannot prove wrong.
+[Answer]: A — the user expects `plan` to report format issues, as `terraform plan` does.

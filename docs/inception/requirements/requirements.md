@@ -51,6 +51,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | FR-DECL.4 | Identity is `name`. Two declared filters with one name are a load error. A rename is a delete plus a create and is documented as such (RVQ-Q2, RVQ-Q17). | Must |
 | FR-DECL.5 | All declared files are validated on load, before any plan or write: required fields, non-blank `raw_sieve`, no duplicate names, order file references only declared filters, every declared filter appears in the order file. Errors name the file and field. | Must |
 | FR-DECL.6 | Validation rejects a filter whose script exceeds the Proton per-filter size limit, once that limit is measured with the live smoke suite (RVQ-Q17, NFR-TEST.2). Until then no limit is enforced and Proton's rejection is reported by FR-APPLY.4. | Could |
+| FR-DECL.7 | Validation rejects a script with a structural error that is certainly wrong: unbalanced braces or brackets, an unterminated string or comment, or a command or tag of a known extension (a fixed short table) used without that extension in `require`. Errors name the file and line and never quote the script. It is not a Sieve grammar and never rejects what it cannot prove wrong, so Proton stays the authority (FR-APPLY.4) (RVQ-Q26). | Should |
 
 ### FR-DISC — Discover and import
 
@@ -124,7 +125,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | NFR-REL.3 | `proton-cli` version: the tested range is `>=4.3.0` (the version verified at specification time), documented in the README and defined in code. Below it the tool warns on stderr (detected vs tested) and continues; newer versions run silently; an unreadable version also warns and continues. Unparseable output or a rejected command fails with a `proton-cli` error (RVQ-Q9). |
 | NFR-OPS.1 | Errors name the file, field or command that failed and what to do next. |
 | NFR-TEST.1 | pytest with Hypothesis for parsing, validation and plan logic; `proton-cli` is faked only at its single subprocess boundary; no live-account tests in CI. A manual smoke test against a free account is optional (RVQ-Q15, RVQ-Q18). |
-| NFR-TEST.2 | An opt-in live smoke suite (`tests/live/`, skipped unless `SIEVE_AS_CODE_LIVE_TEST=1`, run against one named account) exercises create, update, enable/disable, reorder, backup, restore and `.sieve` import using only throwaway filters named with the reserved prefix `sieve-as-code-test-`. Each test deletes what it created in a `finally` block; the suite refuses to start if it cannot list filters and never touches a filter without the prefix (RVQ-Q19). |
+| NFR-TEST.2 | An opt-in live smoke suite (`tests/live/`, skipped unless `SIEVE_AS_CODE_LIVE_TEST=1`, run against one named account) exercises create, update, enable/disable, reorder, backup, restore, `.sieve` import and the rejection of an invalid script (exit 1, no filter left behind) using only throwaway filters named with the reserved prefix `sieve-as-code-test-`. Each test deletes what it created in a `finally` block; the suite refuses to start if it cannot list filters and never touches a filter without the prefix (RVQ-Q19). |
 | NFR-DEP.1 | Runtime dependencies: PyYAML only unless a gap is shown; pinned versions; versions, maintenance status and advisories checked before adding any. |
 
 ---

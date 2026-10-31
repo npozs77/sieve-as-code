@@ -8,7 +8,7 @@ Flat package `src/sieve_as_code/`. One module per component; functions, not clas
 | Settings | `settings.py` | Resolve env vars and the account name to per-account paths and the `proton-cli` binary | FR-CLI.3, FR-ACCT.1, FR-ACCT.2, FR-ACCT.5 |
 | Audit | `audit.py` | Append-only JSONL, names and counts only | FR-APPLY.6, FR-PLAN.4, NFR-SAFE.2, NFR-SAFE.3 |
 | Proton client | `client.py` | Only module that runs `proton-cli`; session and version checks; passes `--profile`; filter, label, folder and message operations | FR-APPLY.3, FR-PLAN.6, NFR-REL.2, NFR-REL.3 |
-| Declared | `declared.py` | Load, render and validate filter files and the order file | FR-DECL.1–3, FR-DECL.5, FR-DECL.6 |
+| Declared | `declared.py` | Load, render and validate filter files and the order file | FR-DECL.1–3, FR-DECL.5, FR-DECL.6, FR-DECL.7 |
 | Live | `live.py` | `discover` | FR-DISC.1 |
 | Importer | `importer.py` | `import_live` and `.sieve` import | FR-DISC.2, FR-DISC.3 |
 | Plan | `plan.py` | Diff declared vs live; targets; extension flags | FR-PLAN.1–6, FR-DECL.4 |

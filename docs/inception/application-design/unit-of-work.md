@@ -33,7 +33,7 @@
 
 ## Unit 3 — Declared model and validation
 
-**Capability**: FR-DECL.1–6
+**Capability**: FR-DECL.1–7
 **Components**: Declared
 **Delivers**:
 - `declared.py` — load, render, validate (incl. size limit)

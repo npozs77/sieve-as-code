@@ -1,0 +1,23 @@
+# SDD tooling, rendered locally — not part of the public repo
+.claude/
+.mcp.json
+.sdd/
+.tmp/
+docs/state.md
+docs/audit.log
+project-profile.yaml
+
+# Python
+.env
+.hypothesis/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/

@@ -1,0 +1,15 @@
+title = "sieve-as-code gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "personal-email-pii"
+description = "A personal email address that is not an obvious placeholder"
+regex = '''[A-Za-z0-9._%+-]+@(?:pm\.me|protonmail\.(?:com|ch)|gmail\.com)'''
+tags = ["pii", "email"]
+
+[rules.allowlist]
+regexes = [
+  '''(?i)example[-_.][a-z0-9._%+-]*@(pm\.me|protonmail\.(com|ch)|gmail\.com)''',
+]

@@ -2,11 +2,11 @@
 
 ## What this is
 
-Proton Mail Sieve filters managed as code: one YAML file per filter plus an order file, a plan (diff) before every write, a backup before every apply, and a typed confirmation before anything that touches existing mail. A Terraform-style discover → plan → apply loop for one Proton account, built on `proton-cli` only.
+Proton Mail Sieve filters managed as code: one YAML file per filter plus an order file, a plan (diff) before every write, a backup before every apply, and a typed confirmation before anything that touches existing mail. A Terraform-style discover → plan → apply loop for one or more Proton accounts, built on `proton-cli` only.
 
 ## Problem & audience
 
-Proton's web UI gives filters no version history, no diff, no audit trail, and no safe way to preview a change. A mistake is invisible until it misroutes mail. The audience is Proton users who keep a non-trivial filter set and want it reviewable, reproducible and restorable. Single account, single operator, no staging account: every design choice assumes mistakes land on the real mailbox.
+Proton's web UI gives filters no version history, no diff, no audit trail, and no safe way to preview a change. A mistake is invisible until it misroutes mail. The audience is Proton users who keep a non-trivial filter set and want it reviewable, reproducible and restorable. One account per command (several accounts supported), single operator, no staging account assumed: every design choice assumes mistakes land on the real mailbox.
 
 ## Scope
 

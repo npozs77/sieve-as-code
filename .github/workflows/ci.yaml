@@ -32,8 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   quality:
-    # Skipped until the package exists (Unit 1 adds pyproject.toml and the Makefile).
-    if: hashFiles('pyproject.toml') != ''
+    # Steps are skipped until the package exists (Unit 1 adds pyproject.toml and the Makefile).
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -42,12 +41,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Install uv
+        if: hashFiles('pyproject.toml') != ''
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
+        if: hashFiles('pyproject.toml') != ''
         run: uv sync --python ${{ matrix.python-version }}
 
       - name: Quality checks
+        if: hashFiles('pyproject.toml') != ''
         run: make quality
 
   ci-ok:

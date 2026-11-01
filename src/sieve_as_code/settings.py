@@ -89,6 +89,33 @@ def account_paths(account: str) -> AccountPaths:
     )
 
 
+@dataclass(frozen=True)
+class Retention:
+    """Optional snapshot retention limits; None means not set. BR-15."""
+
+    keep_days: int | None = None
+    keep_last: int | None = None
+
+
+def _positive(variable: str) -> int | None:
+    """BR-15: unset is None; a set value must be ASCII digits and at least 1."""
+    value = _env(variable)
+    if value is None:
+        return None
+    if not (value.isascii() and value.isdigit() and int(value) >= 1):
+        raise ValidationError(
+            f"{variable} must be a whole number of 1 or more, got {value!r}"
+        )
+    return int(value)
+
+
+def retention() -> Retention:
+    """Return the retention limits from the environment. BR-15."""
+    return Retention(
+        _positive("SIEVE_AS_CODE_KEEP_DAYS"), _positive("SIEVE_AS_CODE_KEEP_LAST")
+    )
+
+
 def proton_cli() -> str:
     """Return the `proton-cli` binary name or path. BR-7."""
     return _env("SIEVE_AS_CODE_PROTON_CLI") or _DEFAULT_PROTON_CLI

@@ -266,3 +266,13 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: A library caller of `plan(paths, client)` would need `account_paths` and `connect` just to start, and those would become frozen API: the backend, the on-disk layout or the checks could never change without a breaking release. Keyword-only parameters, additive results and a single declared surface let the tool grow in 0.x and 1.x without breaking callers; the cheapest time to make modules private is before the first release.
 [Answer]: A — the user agreed; the module rename happens in Unit 9.
+
+### Q30. Identical backups and retention
+Frequent scheduled backups of unchanged filters pile up identical files. What does `backup` do when nothing changed, and how are old snapshots removed?
+- A) Skip when live equals the latest valid snapshot (also for the `apply` and `restore` snapshots); optional retention by newest N and/or days, configured by environment variables with CLI flags overriding, off by default
+- B) Always write; the user deletes old files
+- C) Prune by default
+
+[Suggested]: A
+[Justification]: Filters change rarely, so a skip keeps the history to real changes and makes "keep the last N" mean N distinct states; an identical snapshot is as good a restore point. Deleting is destructive, so it stays opt-in.
+[Answer]: A — the user proposed it; the skip applies to the `apply` and `restore` snapshots too; retention by environment variables.

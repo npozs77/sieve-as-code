@@ -22,6 +22,10 @@ class ClientError(SieveAsCodeError):
         self.exit_code = exit_code
 
 
+class BackupError(SieveAsCodeError):
+    """A snapshot is unreadable, altered, unsupported, foreign or not writable."""
+
+
 @dataclass(frozen=True)
 class Filter:
     """One Proton filter; `live_id` is None for declared-only filters. BR-8."""

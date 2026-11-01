@@ -1,4 +1,4 @@
-"""BR-1 to BR-7, BR-14: account resolution and per-account paths."""
+"""BR-1 to BR-7, BR-14, BR-15: account resolution and per-account paths."""
 
 import os
 import re
@@ -13,9 +13,11 @@ from hypothesis import strategies as st
 from sieve_as_code.model import ValidationError
 from sieve_as_code.settings import (
     AccountPaths,
+    Retention,
     account_paths,
     proton_cli,
     resolve_account,
+    retention,
 )
 
 
@@ -200,7 +202,7 @@ def test_proton_cli_default_and_override() -> None:
 
 
 # BR-14
-def test_env_example_lists_exactly_the_four_variables() -> None:
+def test_env_example_lists_exactly_the_six_variables() -> None:
     text = (Path(__file__).parents[2] / ".env.example").read_text()
     keys = set(re.findall(r"^(SIEVE_AS_CODE_[A-Z_]+)=", text, re.MULTILINE))
     assert keys == {
@@ -208,4 +210,31 @@ def test_env_example_lists_exactly_the_four_variables() -> None:
         "SIEVE_AS_CODE_STATE_DIR",
         "SIEVE_AS_CODE_ACCOUNT",
         "SIEVE_AS_CODE_PROTON_CLI",
+        "SIEVE_AS_CODE_KEEP_DAYS",
+        "SIEVE_AS_CODE_KEEP_LAST",
     }
+
+
+# BR-15
+def test_retention_is_unset_by_default_and_when_blank() -> None:
+    assert retention() == Retention(None, None)
+    os.environ["SIEVE_AS_CODE_KEEP_DAYS"] = "  "
+    assert retention() == Retention(None, None)
+
+
+def test_retention_reads_both_limits() -> None:
+    os.environ["SIEVE_AS_CODE_KEEP_DAYS"] = " 30 "
+    os.environ["SIEVE_AS_CODE_KEEP_LAST"] = "7"
+    assert retention() == Retention(30, 7)
+
+
+@pytest.mark.parametrize("bad", ["0", "-1", "1.5", "abc", "²", "1 2"])
+@pytest.mark.parametrize(
+    "variable", ["SIEVE_AS_CODE_KEEP_DAYS", "SIEVE_AS_CODE_KEEP_LAST"]
+)
+def test_retention_rejects_anything_but_a_positive_whole_number(
+    variable: str, bad: str
+) -> None:
+    os.environ[variable] = bad
+    with pytest.raises(ValidationError, match=variable):
+        retention()

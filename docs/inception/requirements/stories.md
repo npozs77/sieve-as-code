@@ -24,7 +24,7 @@ Acceptance criteria cite requirement IDs; they do not restate them.
 
 | ID | Story | Acceptance |
 |---|---|---|
-| US-3.1 | As a Filter Maintainer, I want a backup before every write and on demand so that I can always go back. | Versioned, checksummed, owner-only, never overwritten (FR-BAK.1–3) |
+| US-3.1 | As a Filter Maintainer, I want a backup before every write and on demand so that I can always go back. | Versioned, checksummed, owner-only, never overwritten; none written when nothing changed; optional retention (FR-BAK.1–3, FR-BAK.6) |
 | US-3.2 | As a Filter Maintainer, I want restore to prove it worked so that I trust the result. | Plan first; success only when the post-restore diff is empty (FR-BAK.4) |
 | US-3.3 | As a Filter Maintainer, I want to compare two backups so that I can see what changed between them. | Plan-style diff of two snapshots (FR-BAK.5) |
 

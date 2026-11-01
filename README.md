@@ -2,7 +2,7 @@
 
 Proton Mail Sieve filters as code: plan before apply, backup before every write, restore on demand. Built on [`proton-cli`](https://github.com/roman-16/proton-cli) only.
 
-**Status: work in progress, not released.** Built so far: configuration and per-account paths, the audit log, the `proton` client, declared files with validation, and the library functions `discover` and `plan` (no CLI yet). Not built yet: `apply`, `import`, backup, restore, retroactive runs and the CLI, so the commands under [Planned usage](#planned-usage) do not work yet. Design: [`concept.md`](concept.md).
+**Status: work in progress, not released.** Built so far: configuration and per-account paths, the audit log, the `proton` client, declared files with validation, the library functions `discover` and `plan`, and backup (`write_backup`, `read_backup`, `diff_backups`; no CLI yet). Not built yet: `apply`, `import`, restore, retroactive runs and the CLI, so the commands under [Planned usage](#planned-usage) do not work yet. Design: [`concept.md`](concept.md).
 
 ## Requirements
 
@@ -19,6 +19,8 @@ Environment variables only; [`.env.example`](.env.example) lists them.
 | `SIEVE_AS_CODE_STATE_DIR` | `$XDG_STATE_HOME/sieve-as-code`, else `~/.local/state/sieve-as-code` | Root of backups, retroactive snapshots and the audit log |
 | `SIEVE_AS_CODE_ACCOUNT` | `default` | Account (`proton` profile) used when none is given |
 | `SIEVE_AS_CODE_PROTON_CLI` | `proton` | Path of the `proton` binary |
+| `SIEVE_AS_CODE_KEEP_DAYS` | unset | `backup` keeps snapshots newer than this many days (with `KEEP_LAST`, either keeps one) |
+| `SIEVE_AS_CODE_KEEP_LAST` | unset | `backup` keeps this many newest snapshots; both unset means nothing is pruned |
 
 ## Planned usage
 

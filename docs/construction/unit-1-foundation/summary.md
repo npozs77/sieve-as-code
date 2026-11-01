@@ -5,13 +5,13 @@
 | Path | Description |
 |------|-------------|
 | `src/sieve_as_code/model.py` | `Filter`, `FilterOrder`, `SieveAsCodeError`, `ValidationError` |
-| `src/sieve_as_code/settings.py` | Account validation, XDG/env root resolution, `AccountPaths`, `proton_cli` |
+| `src/sieve_as_code/settings.py` | Account validation, XDG/env root resolution, `AccountPaths`, `proton_cli`, `Retention`, `retention` (BR-15, addendum) |
 | `src/sieve_as_code/audit.py` | Append-only JSONL `record_write` / `record_check` |
 | `src/sieve_as_code/__init__.py` | Empty until Unit 9 |
 | `tests/unit/test_model.py`, `test_settings.py`, `test_audit.py` | 49 tests |
 | `pyproject.toml`, `uv.lock` | Package, console script, tool config, pinned dev group |
 | `Makefile` | `quality`, `test`, `build` |
-| `.env.example` | The four `SIEVE_AS_CODE_*` variables with defaults |
+| `.env.example` | The six `SIEVE_AS_CODE_*` variables with defaults |
 
 ## Requirement → implementation
 
@@ -44,7 +44,8 @@ No gaps. FR-ACCT.3 and FR-ACCT.4 belong to Units 9 and 2.
 | BR-11 | `audit.py:14` | `test_appends_keep_earlier_lines_unchanged` (PBT), `test_missing_directory_*` |
 | BR-12 | `audit.py:14` | `test_unwritable_log_*`, `test_append_works_after_a_failed_append` |
 | BR-13 | `pyproject.toml` | `make quality`, `uv build` |
-| BR-14 | `.env.example`, `Makefile` | `test_env_example_lists_exactly_the_four_variables`, `make quality` |
+| BR-15 | `settings.py:retention`, `_positive` | `test_retention_*` |
+| BR-14 | `.env.example`, `Makefile` | `test_env_example_lists_exactly_the_six_variables`, `make quality` |
 
 ## Tests
 

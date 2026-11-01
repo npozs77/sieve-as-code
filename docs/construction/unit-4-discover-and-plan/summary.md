@@ -9,7 +9,7 @@
 | `src/sieve_as_code/declared.py` | Added `script_facts`, `ScriptFacts`, `Mailbox`; `_Scanner` records `fileinto` mailboxes |
 | `src/sieve_as_code/model.py` | Added `FilterSet`, `Rename` |
 | `tests/unit/test_live.py` | 8 tests |
-| `tests/unit/test_plan.py` | 35 tests |
+| `tests/unit/test_plan.py` | 40 tests |
 | `tests/unit/test_declared.py` | `script_facts` cases added |
 | `README.md` | Status line |
 
@@ -37,7 +37,7 @@ No gaps.
 | BR-4 | `_entries` | `test_whitespace_only_differences_*` (PBT) |
 | BR-5, BR-6, BR-7, BR-14 | `_entries`, `_live_only`, `diff` | `test_each_entry_kind_*`, `test_content_and_enabled_*`, `test_a_disabled_live_only_*` |
 | BR-8, BR-9 | `_reorder` | `test_any_number_of_moves_*` (PBT), `test_created_filter_*`, `test_live_only_filters_do_not_cause_*` |
-| BR-10 | `_missing_targets`, `discover_targets` | `test_missing_targets_*`, `test_built_in_*`, `test_existing_folders_*`, `test_targets_of_disabled_*`, `test_targets_hold_*` |
+| BR-10 | `_missing_targets`, `discover_targets` | `test_missing_targets_*`, `test_built_in_*`, `test_existing_folders_*`, `test_a_plain_name_*`, `test_a_missing_folder_path_*`, `test_a_label_does_not_*`, `test_a_name_that_is_also_*`, `test_spellings_*`, `test_targets_of_disabled_*`, `test_targets_hold_*` |
 | BR-11 | `_facts` | `test_unreadable_target_*`, `test_plan_audits_unreadable_*` |
 | BR-12 | `_flags` | `test_destructive_extension_*`, `test_flags_do_not_change_the_outcome` |
 | BR-18 | `plan` | `test_plan_refuses_a_client_connected_to_another_account` |
@@ -48,10 +48,10 @@ No gaps.
 
 ## Tests
 
-- 266 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
+- 271 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
 - Build and test: `uv sync && make quality`.
 
 ## Implementation notes
 
-- Built-in mailbox table (BR-10) is a superset (`inbox, archive, spam, trash, drafts, draft, sent, starred, all mail`): Proton's docs give no list, so a built-in is never reported missing. Confirm exact names in the live smoke suite (NFR-TEST.2).
+- Built-in mailbox table (BR-10) is a superset (`inbox, archive, spam, trash, drafts, draft, sent, starred, all mail`): Proton's docs give no list and it accepts any target at filter creation (live probe, 2026-10-31), so a built-in is never reported missing. `inbox` and `spam` are seen in real filters; the rest stay unverified.
 - BR-9's "new filters land last" was confirmed live on 4.3.0 (two creates landed at the end); the live smoke suite keeps it as a regression check.

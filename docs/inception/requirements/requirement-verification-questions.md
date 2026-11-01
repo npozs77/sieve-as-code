@@ -250,3 +250,11 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: B
 [Justification]: Live test with two throwaway filters: Proton accepts two filters with one name, so duplicates can arise outside this tool. An error would also stop `backup`, and with it `apply` and `restore`, which depend on a snapshot first (FR-BAK.1, FR-BAK.4). `proton-cli` has no rename, so a live rename would be delete plus create (FR-DECL.4); numbering only changes how the tool names them.
 [Answer]: A — the user chose download-style numbering with the renames reported.
+
+### Q28. Matching and kind of `fileinto` targets
+- A) Case-insensitive; folders match by full path, labels by name; `/` or a missing parent of one means folder, otherwise label
+- B) Exact match on names and paths; kind left to `apply`
+
+[Suggested]: B
+[Justification]: A live probe shows Proton accepts any `fileinto` target when a filter is created, so a wrong or mis-cased name fails silently. The existing account uses both folders (nested, by path) and labels, and a filter written `Order` works against the label `order`; exact matching would list it missing and `apply` would create a duplicate. A nested folder's bare name must not satisfy a plain target, since the script names the path.
+[Answer]: A — the user confirmed, following the behaviour of the earlier tool.

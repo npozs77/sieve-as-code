@@ -48,6 +48,14 @@ class Rename:
 
 
 @dataclass(frozen=True)
+class Targets:
+    """Existing mailboxes: folder paths and label names. Unit 4 BR-10."""
+
+    folders: frozenset[str] = frozenset()
+    labels: frozenset[str] = frozenset()
+
+
+@dataclass(frozen=True)
 class FilterSet:
     """Filters in execution order with their order: declared, live or snapshot state.
 

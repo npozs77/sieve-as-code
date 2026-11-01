@@ -3,7 +3,7 @@
 from dataclasses import replace
 
 from sieve_as_code.client import ProtonClient
-from sieve_as_code.model import Filter, FilterOrder, FilterSet, Rename
+from sieve_as_code.model import Filter, FilterOrder, FilterSet, Rename, Targets
 
 
 def _number_duplicates(
@@ -34,7 +34,9 @@ def discover(client: ProtonClient) -> FilterSet:
     return FilterSet(filters, FilterOrder(names), renames)
 
 
-def discover_targets(client: ProtonClient) -> frozenset[str]:
-    """Name and path of every folder and label. BR-10, BR-16."""
-    found = [*client.list_folders(), *client.list_labels()]
-    return frozenset(value for target in found for value in (target.name, target.path))
+def discover_targets(client: ProtonClient) -> Targets:
+    """Path of every folder and name of every label. BR-10, BR-16."""
+    return Targets(
+        frozenset(folder.path for folder in client.list_folders()),
+        frozenset(label.name for label in client.list_labels()),
+    )

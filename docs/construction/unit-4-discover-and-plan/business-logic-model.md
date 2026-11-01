@@ -23,7 +23,7 @@ ProtonClient
 FilterSet(filters in live order, FilterOrder, renames)
 ```
 
-`discover_targets(client)` → `list_folders` + `list_labels` → `frozenset` of each target's `name` and `path` (BR-10, BR-16).
+`discover_targets(client)` → `list_folders` + `list_labels` → `Targets(folders=paths, labels=names)` (BR-10, BR-16).
 
 ### Workflow 2: Plan
 
@@ -76,12 +76,13 @@ Stated once in `business-rules.md`; cited here by ID.
 
 ```
 Rename(original: str, name: str)                                 — model.py
+Targets(folders: frozenset[str], labels: frozenset[str])         — model.py
 FilterSet(filters: tuple[Filter, ...], order: FilterOrder, renames: tuple[Rename, ...] = ())   — model.py (shared)
 
 discover(client: ProtonClient) -> FilterSet                       ★ live.py
-discover_targets(client: ProtonClient) -> frozenset[str]          live.py
+discover_targets(client: ProtonClient) -> Targets                  live.py
 plan(paths: AccountPaths, client: ProtonClient) -> PlanResult     ★ plan.py
-diff(declared: FilterSet, live: FilterSet, targets: frozenset[str] | None) -> PlanResult   plan.py   # None = snapshot mode (BR-19)
+diff(declared: FilterSet, live: FilterSet, targets: Targets | None) -> PlanResult   plan.py   # None = snapshot mode (BR-19)
 script_facts(script: str) -> ScriptFacts                          declared.py (new)
 
 ScriptFacts(required: frozenset[str], mailboxes: tuple[Mailbox, ...])
@@ -90,7 +91,7 @@ Mailbox(line: int, name: str | None)         # None = unreadable (BR-11)
 PlanEntry(kind: "create" | "content" | "enabled" | "live-only",
           name: str, live_id: str | None, enabled: bool | None)
 Reorder(old: tuple[str, ...], new: tuple[str, ...])
-MissingTarget(name: str, used_by: tuple[str, ...])
+MissingTarget(name: str, used_by: tuple[str, ...], kind: "folder" | "label")
 Flag(name: str, extension: str)
 PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry, ...],
            reorder: Reorder | None, flags: tuple[Flag, ...],
@@ -125,7 +126,10 @@ PlanResult(missing_targets: tuple[MissingTarget, ...], entries: tuple[PlanEntry,
 | live has extra enabled `z` between `a` and `b` | `live-only z`; no reorder when `a`,`b` keep relative order |
 | live has extra disabled `z` | informational; `clean` if nothing else (BR-7) |
 | `fileinto "Archive"` | built-in, never listed (BR-10) |
-| `fileinto "Receipts"`, no such folder or label | `MissingTarget("Receipts", ("f",))` |
+| `fileinto "Receipts"`, no such folder or label | `MissingTarget("Receipts", ("f",), "label")` |
+| `fileinto "Order"`, label `order` exists | not missing (case-insensitive) |
+| `fileinto "A/B/C"`, folder `A` exists | `A/B`, `A/B/C`, both `folder`, parents first |
+| `fileinto "Child"`, only folder `Parent/Child` | `Child` missing (`label`): folders match by full path |
 | `fileinto "${folder}";` in an enabled filter | `invalid` (BR-11) |
 | same in a disabled filter | ignored |
 | `require ["vnd.proton.expire"]` on an unchanged filter | no flag (BR-12) |
@@ -157,14 +161,14 @@ Additions to earlier units (no rule changes there): `FilterSet` in `model.py`; `
 |-------------|-----------|-----------|--------------|
 | BR-1, BR-16 | Unit | fake `proton`: filters returned in live order with ids; only list/get calls made | `tests/unit/test_live.py` |
 | BR-2 | Unit + PBT | duplicates numbered and reported; taken numbers skipped; PBT: names unique, first keeps its name, ids and order unchanged | `tests/unit/test_live.py` |
-| BR-10 (`discover_targets`) | Unit | folders and labels, name and path both present | `tests/unit/test_live.py` |
+| BR-10 (`discover_targets`) | Unit | folder paths and label names, nothing else | `tests/unit/test_live.py` |
 | BR-3 to BR-7 | Unit | one case per entry kind; informational for disabled live-only | `tests/unit/test_plan.py` |
 | BR-4 | PBT | adding tabs or trailing whitespace to a script never creates a `content` entry | `tests/unit/test_plan.py` |
 | BR-8 | PBT | for any permutation of common names, exactly one `reorder`, none when order equal | `tests/unit/test_plan.py` |
 | BR-9 | Unit | created filter mid-sequence → reorder; at end → none | `tests/unit/test_plan.py` |
 | NFR-REL.1 / BR-15 | PBT | model-based: apply a `PlanResult` to the live `FilterSet` in memory (creates appended, edits, live-only disabled, reorder), then `diff` → `clean` | `tests/unit/test_plan.py` |
 | BR-15 | PBT | `diff(x, x)` is `clean` and empty | `tests/unit/test_plan.py` |
-| BR-10 | Unit | built-ins (any case) never listed; existing folder/label not listed; once per name with users; disabled filter ignored | `tests/unit/test_plan.py` |
+| BR-10 | Unit | built-ins (any case) never listed; existing folder/label not listed, any case; nested bare name no match; parents first; label is no parent; one entry per spelling; once per name with users; disabled filter ignored | `tests/unit/test_plan.py` |
 | BR-11, BR-17 | Unit | variable / `text:` / non-string mailbox → error with line, no script text; escapes resolved | `tests/unit/test_plan.py`, `test_declared.py` |
 | BR-12 | Unit | flag only with a write entry; outcome unchanged by flags | `tests/unit/test_plan.py` |
 | BR-13 | Unit | audit line per outcome holds counts only; `invalid` audited; `ClientError` not audited | `tests/unit/test_plan.py` |

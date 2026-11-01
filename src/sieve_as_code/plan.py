@@ -18,6 +18,7 @@ from sieve_as_code.model import (
     FilterSet,
     Rename,
     SieveAsCodeError,
+    Targets,
     ValidationError,
 )
 from sieve_as_code.settings import AccountPaths
@@ -53,10 +54,11 @@ class Reorder:
 
 @dataclass(frozen=True)
 class MissingTarget:
-    """A `fileinto` folder or label the account lacks, with the filters using it."""
+    """A folder or label the account lacks, with the filters using it. BR-10."""
 
     name: str
     used_by: tuple[str, ...]
+    kind: Literal["folder", "label"]
 
 
 @dataclass(frozen=True)
@@ -101,21 +103,43 @@ def _facts(declared: FilterSet) -> dict[str, ScriptFacts]:
     return facts
 
 
+def _missing_pieces(
+    target: str, folders: set[str], labels: set[str]
+) -> list[tuple[str, Literal["folder", "label"]]]:
+    """BR-10: the missing folders or label behind `target`, parents first."""
+    if "/" not in target:
+        return [] if target.casefold() in folders | labels else [(target, "label")]
+    parts = target.split("/")
+    paths = ("/".join(parts[:depth]) for depth in range(1, len(parts) + 1))
+    missing = [path for path in paths if path and path.casefold() not in folders]
+    return [(path, "folder") for path in missing]
+
+
 def _missing_targets(
-    order: tuple[str, ...], facts: Mapping[str, ScriptFacts], known: frozenset[str]
+    order: tuple[str, ...], facts: Mapping[str, ScriptFacts], known: Targets
 ) -> tuple[MissingTarget, ...]:
-    """BR-10: unknown, non-built-in targets in order of first use."""
-    users: dict[str, list[str]] = {}
+    """BR-10: missing, non-built-in targets in order of first use, parents first."""
+    folders = {
+        "/".join(parts[:depth]).casefold()
+        for parts in (path.split("/") for path in known.folders)
+        for depth in range(1, len(parts) + 1)
+    }
+    labels = {name.casefold() for name in known.labels}
+    found: dict[str, tuple[str, Literal["folder", "label"], list[str]]] = {}
     for name in order:
         for mailbox in facts[name].mailboxes if name in facts else ():
             target = mailbox.name
-            if target is None or target in known:
+            if target is None or target.casefold() in _BUILTIN_MAILBOXES:
                 continue
-            if target.casefold() in _BUILTIN_MAILBOXES:
-                continue
-            if name not in users.setdefault(target, []):
-                users[target].append(name)
-    return tuple(MissingTarget(key, tuple(value)) for key, value in users.items())
+            for piece, kind in _missing_pieces(target, folders, labels):
+                spelling, current, users = found.setdefault(
+                    piece.casefold(), (piece, kind, [])
+                )
+                if name not in users:
+                    users.append(name)
+                if kind == "folder" and current == "label":
+                    found[piece.casefold()] = (spelling, kind, users)
+    return tuple(MissingTarget(s, tuple(u), k) for s, k, u in found.values())
 
 
 def _entries(declared: FilterSet, live: Mapping[str, Filter]) -> tuple[PlanEntry, ...]:
@@ -176,9 +200,7 @@ def _flags(
     )
 
 
-def diff(
-    declared: FilterSet, live: FilterSet, targets: frozenset[str] | None
-) -> PlanResult:
+def diff(declared: FilterSet, live: FilterSet, targets: Targets | None) -> PlanResult:
     """Pure diff of declared against live state. BR-3 to BR-15.
 
     `targets=None` is snapshot mode: no target check, missing targets or flags. BR-19.
@@ -187,7 +209,7 @@ def diff(
     live_by_name = {item.name: item for item in live.filters}
     changes = _entries(declared, live_by_name)
     extra, quiet = _live_only(declared, live)
-    known = targets or frozenset()
+    known = targets or Targets()
     return PlanResult(
         missing_targets=_missing_targets(declared.order.sequence, facts, known),
         entries=changes + extra,

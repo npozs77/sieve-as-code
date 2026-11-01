@@ -6,7 +6,7 @@ from hypothesis import strategies as st
 
 from sieve_as_code.client import ProtonClient, connect
 from sieve_as_code.live import _number_duplicates, discover, discover_targets
-from sieve_as_code.model import Filter
+from sieve_as_code.model import Filter, Targets
 from sieve_as_code.settings import AccountPaths
 from tests.fake_proton import FakeProton
 
@@ -94,9 +94,11 @@ def test_numbered_names_are_unique_and_first_occurrences_keep_theirs(
     assert len(renames) == sum(a != b for a, b in zip(names, result, strict=True))
 
 
-def test_targets_hold_name_and_path_of_folders_and_labels(
+def test_targets_hold_folder_paths_and_label_names(
     client: ProtonClient, fake_proton: FakeProton
-) -> None:
+) -> None:  # BR-10
     fake_proton.folders.append({"id": "t1", "name": "Child", "path": "Parent/Child"})
     fake_proton.labels.append({"id": "t2", "name": "Receipts", "path": "Receipts"})
-    assert discover_targets(client) == {"Child", "Parent/Child", "Receipts"}
+    assert discover_targets(client) == Targets(
+        frozenset({"Parent/Child"}), frozenset({"Receipts"})
+    )

@@ -1,6 +1,6 @@
 # Component Methods
 
-Public functions only. Signatures are design intent; Functional Design fixes them per unit. `★` = documented public API (FR-CLI.2).
+Public functions only. Signatures are design intent; Functional Design fixes them per unit. `★` = documented public API (FR-CLI.2). A ★ row shows the internal function; its public counterpart in `sieve_as_code` is the account-resolving, keyword-only wrapper defined in Unit 9 (FR-CLI.2, RVQ-Q29), for example `plan(*, account=None)`.
 
 | Module | Function | Purpose |
 |---|---|---|

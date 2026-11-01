@@ -258,3 +258,11 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: B
 [Justification]: A live probe shows Proton accepts any `fileinto` target when a filter is created, so a wrong or mis-cased name fails silently. The existing account uses both folders (nested, by path) and labels, and a filter written `Order` works against the label `order`; exact matching would list it missing and `apply` would create a duplicate. A nested folder's bare name must not satisfy a plain target, since the script names the path.
 [Answer]: A — the user confirmed, following the behaviour of the earlier tool.
+
+### Q29. Shape of the public API
+- A) Keyword-only, account-resolving functions; internals private; `__all__` is the only public surface; internal modules underscore-prefixed
+- B) Expose `AccountPaths`, `connect` and the client as part of the API
+
+[Suggested]: A
+[Justification]: A library caller of `plan(paths, client)` would need `account_paths` and `connect` just to start, and those would become frozen API: the backend, the on-disk layout or the checks could never change without a breaking release. Keyword-only parameters, additive results and a single declared surface let the tool grow in 0.x and 1.x without breaking callers; the cheapest time to make modules private is before the first release.
+[Answer]: A — the user agreed; the module rename happens in Unit 9.

@@ -18,4 +18,4 @@ Flat package `src/sieve_as_code/`. One module per component; functions, not clas
 | Sieve evaluator | `sieve_eval.py` | Evaluate the supported Sieve subset against a message | FR-RETRO.2 |
 | Retroactive | `retroactive.py` | Preview, gated run, snapshots, status, audit report | FR-RETRO.1–5 |
 | CLI | `cli.py` | argparse dispatch, confirmations, exit codes | FR-CLI.1 |
-| Public API | `__init__.py` | Re-exports the documented functions | FR-CLI.2 |
+| Public API | `__init__.py` | Keyword-only wrappers that resolve the account and connect; `__all__` is the public surface | FR-CLI.2 |

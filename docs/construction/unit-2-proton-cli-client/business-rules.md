@@ -1,6 +1,6 @@
 # Business Rules — Unit 2: Proton CLI client
 
-Output shapes marked ✔ were confirmed live against `proton` 4.2.3; ? = taken from the documented text labels or exit-code table, to be confirmed by the live smoke suite (NFR-TEST.2).
+Output shapes marked ✔ were confirmed live against `proton` 4.2.3 and re-confirmed on 4.3.0 (list, get, create, delete; 2026-10-31); ? = taken from the documented text labels or exit-code table, to be confirmed by the live smoke suite (NFR-TEST.2).
 
 | ID | Rule (condition → outcome) | Source |
 |----|----------------------------|--------|

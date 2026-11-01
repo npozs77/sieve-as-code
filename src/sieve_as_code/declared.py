@@ -137,6 +137,8 @@ class _Scanner:
     def _close(self, char: str) -> str | None:
         if char == "]":
             self.mailbox = None
+        else:
+            self._end_fileinto()
         wanted = "{" if char == "}" else "["
         if not self.open or self.open[-1][0] != wanted:
             return f"line {self.line}: unbalanced {char!r}"
@@ -169,7 +171,7 @@ class _Scanner:
         return None
 
     def _end_fileinto(self) -> None:
-        """Unit 4 BR-17: the last argument before `;` is the mailbox."""
+        """Unit 4 BR-17: the last argument before `;` or `}` is the mailbox."""
         if self.mailbox_line is not None:
             self.mailboxes.append(Mailbox(self.mailbox_line, self.mailbox))
             self.mailbox_line = None

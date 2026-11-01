@@ -444,6 +444,7 @@ def mailboxes(script: str) -> list[tuple[int, str | None]]:
         ("fileinto text:\nX\n.\n;", [(1, None)]),
         ('fileinto "A"; fileinto "B";', [(1, "A"), (1, "B")]),
         ('# fileinto "no"\nif true { fileinto "yes"; }', [(2, "yes")]),
+        ('if true { fileinto "A" }\nif true { fileinto "B"; }', [(1, "A"), (2, "B")]),
         ('fileinto "unterminated', []),
         ("keep;", []),
     ],

@@ -13,7 +13,13 @@ from sieve_as_code.declared import (
     script_facts,
 )
 from sieve_as_code.live import discover, discover_targets
-from sieve_as_code.model import Filter, FilterSet, Rename, ValidationError
+from sieve_as_code.model import (
+    Filter,
+    FilterSet,
+    Rename,
+    SieveAsCodeError,
+    ValidationError,
+)
 from sieve_as_code.settings import AccountPaths
 
 # BR-10: a superset of Proton's built-in mailboxes, so a built-in is never reported
@@ -204,8 +210,11 @@ def plan(paths: AccountPaths, client: ProtonClient) -> PlanResult:
         declared = FilterSet(tuple(filters), order)
         live = discover(client)
         result = diff(declared, live, discover_targets(client))
-    except ValidationError:
-        record_check(paths.audit_log, "invalid", {})
+    except ValidationError as invalid:
+        try:
+            record_check(paths.audit_log, "invalid", {})
+        except SieveAsCodeError as audit_failure:
+            raise invalid from audit_failure
         raise
     record_check(
         paths.audit_log,

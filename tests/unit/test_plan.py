@@ -414,3 +414,13 @@ def test_an_unreadable_target_wins_over_a_missing_target() -> None:  # BR-10, BR
     )
     with pytest.raises(ValidationError, match="'b'"):
         diff(declared, state(live=True), frozenset())
+
+
+def test_a_failing_audit_write_does_not_hide_the_validation_error(
+    client: ProtonClient, work_account: AccountPaths
+) -> None:  # BR-13
+    work_account.audit_log.parent.mkdir(parents=True, exist_ok=True)
+    work_account.audit_log.mkdir()
+    with pytest.raises(ValidationError, match="filters directory") as caught:
+        plan(work_account, client)
+    assert isinstance(caught.value.__cause__, SieveAsCodeError)

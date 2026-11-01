@@ -9,7 +9,7 @@
 | `src/sieve_as_code/declared.py` | Added `script_facts`, `ScriptFacts`, `Mailbox`; `_Scanner` records `fileinto` mailboxes |
 | `src/sieve_as_code/model.py` | Added `FilterSet`, `Rename` |
 | `tests/unit/test_live.py` | 8 tests |
-| `tests/unit/test_plan.py` | 34 tests |
+| `tests/unit/test_plan.py` | 35 tests |
 | `tests/unit/test_declared.py` | `script_facts` cases added |
 | `README.md` | Status line |
 
@@ -48,10 +48,10 @@ No gaps.
 
 ## Tests
 
-- 264 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
+- 266 tests in total, passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works.
 - Build and test: `uv sync && make quality`.
 
 ## Implementation notes
 
 - Built-in mailbox table (BR-10) is a superset (`inbox, archive, spam, trash, drafts, draft, sent, starred, all mail`): Proton's docs give no list, so a built-in is never reported missing. Confirm exact names in the live smoke suite (NFR-TEST.2).
-- BR-9's "new filters land last" is an assumption for the live smoke suite to confirm.
+- BR-9's "new filters land last" was confirmed live on 4.3.0 (two creates landed at the end); the live smoke suite keeps it as a regression check.

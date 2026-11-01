@@ -22,8 +22,8 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | importer | `import_live(name, force)` ★, `import_sieve_files(paths)` ★ | Write declared files |
 | plan | `plan(paths, client)` ★, `diff(declared, live, targets)` | Audited `PlanResult` with typed entries, flags and renames; `diff` is pure, `targets=None` is snapshot mode (Unit 4 design) |
 | backup | `write_backup(paths, client)` ★, `read_backup(ref, paths, fingerprint)`, `diff_backups(a, b, paths)` ★, `prune_backups(paths, keep)` ★ | Verified owner-only `Snapshot` (existing one when unchanged); `diff_backups` is A → B in snapshot mode; `prune_backups` only where retention is set; `BackupError` in `model` (Unit 5 design) |
-| apply | `apply_plan(result, confirmed, allow_delete)` ★ | `ApplyReport` |
-| restore | `restore(ref, confirmed)` ★ | `RestoreReport` |
+| apply | `apply_plan(paths, client, confirmed, allow_delete)` ★, `run_actions(...)` | Snapshot first, ordered writes, stop-on-failure `ApplyReport`; `run_actions` is the engine `restore` shares (Unit 6 design) |
+| restore | `restore(ref, paths, client, confirmed)` ★ | Pre-restore snapshot, writes, re-read; `RestoreReport` with `remaining` (Unit 6 design) |
 | sieve_eval | `evaluate(script, message)` | Actions, or `UnsupportedSieve` |
 | retroactive | `preview(name)` ★, `run(name, confirmed_name, reason)` ★, `status(snapshot)` ★, `audit_all()` ★ | FR-RETRO.* |
 | cli | `main(argv)` | Entry point |

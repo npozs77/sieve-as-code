@@ -13,13 +13,13 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | client | `ProtonClient.list_filters()`, `get_filter(...)`, `create_filter(...)`, `update_filter(...)`, `delete_filter(...)`, `enable_filter(...)`, `disable_filter(...)`, `reorder_filters(...)` | Filter operations; scripts via stdin |
 | client | `ProtonClient.list_labels()`, `list_folders()`, `create_label(...)`, `create_folder(...)` | Targets |
 | client | `ProtonClient.list_messages()`, `apply_retroactively(live_id)` | Retroactive support |
-| declared | `load_declared(paths)` ★ | Parse files into filters and order, validated |
+| declared | `load_declared(paths)` ★, `load_local(paths)`, `free_filename(name, taken)` | Parse files into filters and order, validated |
 | declared | `validate_declared(filters, order)` ★ | Raise on any FR-DECL.5/7 failure |
 | declared | `render(filters, order, paths)` | File contents; caller writes |
 | declared | `normalize_whitespace(script)` | Script as written to files |
 | declared | `script_facts(script)` | Required extensions and `fileinto` mailboxes (Unit 4 design) |
 | live | `discover(client)` ★, `discover_targets(client)` | `FilterSet` of live filters in order, duplicate names numbered and listed in `renames`; folder paths and label names as `Targets` (Unit 4 design) |
-| importer | `import_live(name, force)` ★, `import_sieve_files(paths)` ★ | Write declared files |
+| importer | `import_live(paths, client, name, force)` ★, `import_sieve_files(paths, sources, force)` ★ | Write declared files; `ImportReport` with `new`, `changed`, `reordered`, `preserved`, `written`; refuses without `force` (Unit 7 design) |
 | plan | `plan(paths, client)` ★, `diff(declared, live, targets)` | Audited `PlanResult` with typed entries, flags and renames; `diff` is pure, `targets=None` is snapshot mode (Unit 4 design) |
 | backup | `write_backup(paths, client)` ★, `read_backup(ref, paths, fingerprint)`, `diff_backups(a, b, paths)` ★, `prune_backups(paths, keep)` ★ | Verified owner-only `Snapshot` (existing one when unchanged); `diff_backups` is A → B in snapshot mode; `prune_backups` only where retention is set; `BackupError` in `model` (Unit 5 design) |
 | apply | `apply_plan(paths, client, confirmed, allow_delete)` ★, `run_actions(...)` | Snapshot first, ordered writes, stop-on-failure `ApplyReport`; `run_actions` is the engine `restore` shares (Unit 6 design) |

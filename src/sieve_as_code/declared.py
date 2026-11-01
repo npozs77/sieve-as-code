@@ -2,7 +2,7 @@
 
 import re
 import unicodedata
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -341,21 +341,30 @@ def _dump(data: dict[str, Any]) -> str:
     )
 
 
+def _file_key(filename: str) -> str:
+    return unicodedata.normalize("NFC", filename).casefold()
+
+
+def free_filename(name: str, taken: Collection[str]) -> str:
+    """BR-10 file name, or `<base> (n).yaml` with the lowest free `n`. BR-20."""
+    base = _filter_filename(name)
+    used = {_file_key(filename) for filename in taken}
+    candidate, count = base, 0
+    while _file_key(candidate) in used:
+        count += 1
+        candidate = f"{base.removesuffix('.yaml')} ({count}).yaml"
+    return candidate
+
+
 def render(
     filters: Sequence[Filter], order: FilterOrder, paths: AccountPaths
 ) -> dict[Path, str]:
-    """File text per path for the declared files; writes nothing. BR-10 to BR-14."""
+    """File text per path for the declared files; writes nothing. BR-10 to BR-20."""
     rendered: dict[Path, str] = {paths.order_file: _dump({"sequence": order.sequence})}
-    owners: dict[str, str] = {}
+    taken: list[str] = []
     for item in filters:
-        filename = _filter_filename(item.name)
-        key = unicodedata.normalize("NFC", filename).casefold()
-        if key in owners:
-            raise ValidationError(
-                f"filters {owners[key]!r} and {item.name!r} would share "
-                f"the file name {filename!r}"
-            )
-        owners[key] = item.name
+        filename = free_filename(item.name, taken)
+        taken.append(filename)
         entry: dict[str, Any] = {
             "name": item.name,
             "raw_sieve": normalize_whitespace(item.raw_sieve),
@@ -364,3 +373,18 @@ def render(
             entry["enabled"] = False
         rendered[paths.filters_dir / filename] = _dump(entry)
     return rendered
+
+
+def load_local(
+    paths: AccountPaths,
+) -> tuple[dict[Path, Filter], tuple[str, ...] | None]:
+    """Filter files by path and the order sequence (None if absent). BR-19."""
+    files = (
+        sorted(path for path in paths.filters_dir.glob("*.yaml") if path.is_file())
+        if paths.filters_dir.is_dir()
+        else []
+    )
+    loaded = {path: _load_filter(path) for path in files}
+    _check_duplicates(list(loaded.values()), [path.name for path in files])
+    order = _load_order(paths.order_file) if paths.order_file.is_file() else None
+    return loaded, None if order is None else order.sequence

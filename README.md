@@ -2,7 +2,7 @@
 
 Proton Mail Sieve filters as code: plan before apply, backup before every write, restore on demand. Built on [`proton-cli`](https://github.com/roman-16/proton-cli) only.
 
-**Status: work in progress, not released.** Built so far: configuration and per-account paths, the audit log, the `proton` client, declared files with validation, the library functions `discover` and `plan`, backup (`write_backup`, `read_backup`, `diff_backups`), and `apply_plan` and `restore` (no CLI yet). Not built yet: `import`, retroactive runs and the CLI, so the commands under [Planned usage](#planned-usage) do not work yet. Design: [`concept.md`](concept.md).
+**Status: work in progress, not released.** Built so far: configuration and per-account paths, the audit log, the `proton` client, declared files with validation, the library functions `discover` and `plan`, backup (`write_backup`, `read_backup`, `diff_backups`), `apply_plan` and `restore`, and `import_live` and `import_sieve_files` (no CLI yet). Not built yet: retroactive runs and the CLI, so the commands under [Planned usage](#planned-usage) do not work yet. Design: [`concept.md`](concept.md).
 
 ## Requirements
 

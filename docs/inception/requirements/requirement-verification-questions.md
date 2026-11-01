@@ -129,7 +129,7 @@ Profile says `cli` + `library`. What is the public library API?
 - C) Other
 
 [Suggested]: A
-[Justification]: Profile `artifact_type: [cli, library]`; Concept Roadmap 1 says a private codebase consumes this "at a pinned version."
+[Justification]: Profile `artifact_type: [cli, library]`; programs import the package at a pinned version (FR-CLI.2).
 [Answer]: A — Documented functions for load/validate, plan, apply, import, backup, restore are the supported API; the CLI wraps them.
 
 ### Q15. Test strategy
@@ -146,7 +146,7 @@ Where do the SDD specs live for this public repo?
 - B) `docs/` kept untracked/private; only code and README published
 
 [Suggested]: A
-[Justification]: Concept Open items asks for "lean, public" specs here; Roadmap 1 says private history and docs must not be published, which concerns the private repo, not these.
+[Justification]: Concept Open items asks for lean, public specs here.
 [Answer]: A — `docs/` committed in this repo.
 
 ## Scope
@@ -217,3 +217,52 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: The run acts on the live script, and the preview is built from it, so the preview is accurate; the typed confirmation already gates the run. Blocking would stop a deliberate run of a live filter while other filters are drifting.
 [Answer]: A — as suggested.
+
+### Q24. Default directories and platforms
+- A) Defaults follow XDG: filters under `$XDG_CONFIG_HOME/sieve-as-code` (else `~/.config/sieve-as-code`), state under `$XDG_STATE_HOME/sieve-as-code` (else `~/.local/state/sieve-as-code`); the env vars override; Linux and macOS only, Windows unsupported
+- B) No default; the env vars are required
+- C) One default root under `~/.local/share`
+
+[Suggested]: A
+[Justification]: XDG is the Linux convention (also used by gh and uv on macOS) and splits user-authored files (config) from generated ones (state), in a few stdlib lines with no `platformdirs` dependency (NFR-DEP.1).
+[Answer]: A — as suggested; Windows unsupported.
+
+### Q25. Proton's diagnostic in error messages
+- A) A terminal error includes the first line of `proton`'s stderr (capped at 200 characters); the audit log and logs never do
+- B) Error messages never include `proton` output
+
+[Suggested]: A
+[Justification]: That line is `proton`'s only reason for rejecting a script (FR-APPLY.4) and the only way an operator can fix it; a cap limits length, not content, so the safeguard is where it goes: the terminal, never a file.
+[Answer]: A — as suggested.
+
+### Q26. Plan-time Sieve structure check
+- A) `plan` and `apply` validate script structure locally (certain errors only); Proton stays the authority
+- B) Scripts stay opaque; Proton's rejection at write time is the only check
+
+[Suggested]: B
+[Justification]: Live check against `proton` 4.3.0: all bad scripts (missing brace, missing `require`, unknown extension) fail only at create with `[HTTP 400] 2001: Invalid filter representation` and no detail, and `--dry-run` accepts them, so a bad file means a half-applied run (FR-APPLY.4). A full Sieve grammar would duplicate Proton's, so the local check is limited to errors that are certain, never rejecting what it cannot prove wrong.
+[Answer]: A — the user expects `plan` to report format issues, as `terraform plan` does.
+
+### Q27. Live filters that share a name
+- A) Number them like downloaded files (`x`, `x (1)`, `x (2)`) in discover, plan, backup and import, and report each rename
+- B) Treat duplicates as an error everywhere
+
+[Suggested]: B
+[Justification]: Live test with two throwaway filters: Proton accepts two filters with one name, so duplicates can arise outside this tool. An error would also stop `backup`, and with it `apply` and `restore`, which depend on a snapshot first (FR-BAK.1, FR-BAK.4). `proton-cli` has no rename, so a live rename would be delete plus create (FR-DECL.4); numbering only changes how the tool names them.
+[Answer]: A — the user chose download-style numbering with the renames reported.
+
+### Q28. Matching and kind of `fileinto` targets
+- A) Case-insensitive; folders match by full path, labels by name; `/` or a missing parent of one means folder, otherwise label
+- B) Exact match on names and paths; kind left to `apply`
+
+[Suggested]: B
+[Justification]: A live probe shows Proton accepts any `fileinto` target when a filter is created, so a wrong or mis-cased name fails silently. The existing account uses both folders (nested, by path) and labels, and a filter written `Order` works against the label `order`; exact matching would list it missing and `apply` would create a duplicate. A nested folder's bare name must not satisfy a plain target, since the script names the path.
+[Answer]: A — the user confirmed, following the behaviour of the earlier tool.
+
+### Q29. Shape of the public API
+- A) Keyword-only, account-resolving functions; internals private; `__all__` is the only public surface; internal modules underscore-prefixed
+- B) Expose `AccountPaths`, `connect` and the client as part of the API
+
+[Suggested]: A
+[Justification]: A library caller of `plan(paths, client)` would need `account_paths` and `connect` just to start, and those would become frozen API: the backend, the on-disk layout or the checks could never change without a breaking release. Keyword-only parameters, additive results and a single declared surface let the tool grow in 0.x and 1.x without breaking callers; the cheapest time to make modules private is before the first release.
+[Answer]: A — the user agreed; the module rename happens in Unit 9.

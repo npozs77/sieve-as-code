@@ -9,7 +9,7 @@
 **Capability**: FR-CLI.3, FR-ACCT.1, FR-ACCT.2, FR-ACCT.5, NFR-SAFE.2, NFR-SAFE.3, NFR-DEP.1, CON-5
 **Components**: Model, Settings, Audit
 **Delivers**:
-- `pyproject.toml`, `uv.lock`, `.env.example`, `.gitignore` entries, ruff/black/mypy/vulture config
+- `pyproject.toml`, `uv.lock`, `Makefile` (`quality`, `test`, `build`), `.env.example`, `.gitignore` entries, ruff/black/mypy/vulture config
 - `model.py`, `settings.py`, `audit.py`
 - Unit tests for each
 
@@ -33,7 +33,7 @@
 
 ## Unit 3 — Declared model and validation
 
-**Capability**: FR-DECL.1–6
+**Capability**: FR-DECL.1–7
 **Components**: Declared
 **Delivers**:
 - `declared.py` — load, render, validate (incl. size limit)
@@ -109,7 +109,8 @@
 **Capability**: FR-CLI.1, FR-CLI.2, FR-ACCT.3, NFR-TEST.2
 **Components**: CLI, Public API
 **Delivers**:
-- `cli.py`, `__init__.py`, console-script entry
+- `cli.py`, `__init__.py` (`__all__`, `__version__`, one wrapper per ★ function, RVQ-Q29), console-script entry
+- Rename the internal modules with a leading underscore (`_plan.py`, …) and update imports and tests
 - README (tested `proton-cli` range, rename note, API list), CHANGELOG
 - CLI tests: confirmations, exit codes
 - `tests/live/` opt-in smoke suite with throwaway-filter cleanup (NFR-TEST.2)
@@ -144,7 +145,7 @@ Phase 4: Delivery        Unit 9
 | Confirmation guard on writes | Units 6, 8, 9 | `confirmed` flags in library; prompts in CLI |
 | Unattended failure signalling | Unit 9 | non-zero exit and audit line on failure |
 | Public API surface definition | Unit 9 | FR-CLI.2 |
-| Versioning / compatibility policy | Unit 9 | semver in README; only documented functions are public |
+| Versioning / compatibility policy | Unit 9 | semver in README; `__all__` is the public surface; provisional until 1.0 |
 | Packaging / distribution entry points | Unit 1 | PyPI build; publishing is Operations |
 
 ---

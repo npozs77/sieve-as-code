@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sieve-as-code"
+version = "0.1.0"
+description = "Proton Mail Sieve filters as code: discover, plan, apply, backup, restore."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6.0.3,<7"]
+
+[project.scripts]
+sieve-as-code = "sieve_as_code.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "pytest-cov==7.1.0",
+    "hypothesis==6.170.14",
+    "ruff==0.17.3",
+    "black==26.10.1",
+    "mypy==2.4.1",
+    "vulture==2.16",
+    "types-PyYAML==6.0.12.20261030",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sieve_as_code"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["."]
+addopts = "--cov=sieve_as_code --cov-report=term-missing:skip-covered --cov-fail-under=90"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+[tool.vulture]
+paths = ["src", "tests"]
+min_confidence = 60
+# pytest calls fixtures by name, which vulture cannot see.
+ignore_decorators = ["@pytest.fixture"]

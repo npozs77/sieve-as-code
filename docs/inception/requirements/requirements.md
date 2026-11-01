@@ -51,12 +51,13 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | FR-DECL.4 | Identity is `name`. Two declared filters with one name are a load error. A rename is a delete plus a create and is documented as such (RVQ-Q2, RVQ-Q17). | Must |
 | FR-DECL.5 | All declared files are validated on load, before any plan or write: required fields, non-blank `raw_sieve`, no duplicate names, order file references only declared filters, every declared filter appears in the order file. Errors name the file and field. | Must |
 | FR-DECL.6 | Validation rejects a filter whose script exceeds the Proton per-filter size limit, once that limit is measured with the live smoke suite (RVQ-Q17, NFR-TEST.2). Until then no limit is enforced and Proton's rejection is reported by FR-APPLY.4. | Could |
+| FR-DECL.7 | Validation rejects a script with a structural error that is certainly wrong: unbalanced braces or brackets, an unterminated string or comment, or a command or tag of a known extension (a fixed short table) used without that extension in `require`. Errors name the file and line and never quote the script. It is not a Sieve grammar and never rejects what it cannot prove wrong, so Proton stays the authority (FR-APPLY.4) (RVQ-Q26). | Should |
 
 ### FR-DISC — Discover and import
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-DISC.1 | `discover` reads all live filters (content, `enabled`, order) via `proton-cli`, read-only, and prints them in the declarative format. Two live filters sharing a name are an error, not collapsed. | Must |
+| FR-DISC.1 | `discover` reads all live filters (content, `enabled`, order) via `proton-cli`, read-only, and prints them in the declarative format. Live filters sharing a name are shown under numbered names: the first keeps its name, later ones become `name (1)`, `name (2)`, skipping a number a real filter uses; nothing in Proton is renamed and every rename is reported (RVQ-Q27). `plan`, `backup` and `import` use the same names. | Must |
 | FR-DISC.2 | `import [NAME]` writes live filters into the declared files. Where local files already exist and differ from live, it prints the local-vs-live diff and refuses to overwrite without `--force`. Local-only filters are never deleted (RVQ-Q5). | Must |
 | FR-DISC.3 | `import` also reads plain `.sieve` files as filters, using the file name as the filter name (RVQ-Q17). | Should |
 
@@ -66,7 +67,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 |---|---|---|
 | FR-PLAN.1 | `plan` diffs declared against live state with no mutation. Entries: creates, content changes, `enabled` changes, enabled live-only filters, one reorder, and missing targets (RVQ-Q3). A live-only filter that is already disabled is listed as informational and is not drift (RVQ-Q21). | Must |
 | FR-PLAN.2 | A reorder is exactly one diff entry (old vs new sequence), however many filters moved. Only filters present both declared and live are compared; live-only filters are ignored (RVQ-Q21). | Must |
-| FR-PLAN.3 | `plan` lists each `fileinto` folder or label that an enabled declared filter targets and the account lacks, ahead of the filter entries; Proton's built-in mailboxes are never listed. A target `plan` cannot read literally fails the plan. | Must |
+| FR-PLAN.3 | `plan` lists each `fileinto` folder or label that an enabled declared filter targets and the account lacks, ahead of the filter entries, each marked folder or label: a target with `/`, and each missing parent of one, is a folder, any other name a label. Names match case-insensitively, folders by full path and labels by name (RVQ-Q28). Proton's built-in mailboxes are never listed. A target `plan` cannot read literally fails the plan. | Must |
 | FR-PLAN.4 | `plan` is the drift detector; there is no baseline file. Its outcome (`clean`, `drift`, `invalid`) is audit-logged. | Must |
 | FR-PLAN.5 | `plan` flags filters using destructive Proton extensions (for example `vnd.proton.expire`) (RVQ-Q17). | Must |
 | FR-PLAN.6 | `plan` and `discover` use read-only `proton-cli` calls only. | Must |
@@ -107,8 +108,8 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-CLI.1 | The CLI `sieve-as-code` provides `discover`, `plan`, `apply`, `import`, `backup`, `backup-diff`, `restore`, `apply-retroactive`, `retroactive-status`, `retroactive-audit` (RVQ-Q13). | Must |
-| FR-CLI.2 | The package `sieve_as_code` exposes a documented function for every CLI command (discover, plan, apply, import, backup, backup-diff, restore, and the three retroactive commands) plus load/validate; the CLI is a thin wrapper over them (RVQ-Q14). Anything not documented is internal. | Must |
-| FR-CLI.3 | Configuration comes from environment variables: `SIEVE_AS_CODE_FILTERS_DIR` (root; per account `<root>/<account>/filters/*.yaml` and `<root>/<account>/order.yaml`), `SIEVE_AS_CODE_STATE_DIR` (root; per account `<root>/<account>/backups/`, `retroactive/`, `audit.log`), `SIEVE_AS_CODE_ACCOUNT` (default account) and `SIEVE_AS_CODE_PROTON_CLI` (binary, default `proton`) (RVQ-Q11, RVQ-Q18). The repository ships a `.env.example` listing them; the tool has no `.env` loader (RVQ-Q22). | Must |
+| FR-CLI.2 | The package `sieve_as_code` exposes a documented function for every CLI command (discover, plan, apply, import, backup, backup-diff, restore, and the three retroactive commands) plus load/validate; the CLI is a thin wrapper over them (RVQ-Q14). Anything not documented is internal. Each public function takes its subject positionally and every other parameter by keyword; it resolves the account (`account=None` as FR-ACCT.1), connects and checks the account itself, so paths and the `proton` client are never part of the API. Results are frozen dataclasses that only gain fields with defaults; `SieveAsCodeError`, `ValidationError` and `ClientError` are public and new errors subclass them. `__all__` of `sieve_as_code` is the whole public surface, versioned by semver and provisional until 1.0 (RVQ-Q29). | Must |
+| FR-CLI.3 | Configuration comes from environment variables: `SIEVE_AS_CODE_FILTERS_DIR` (default `$XDG_CONFIG_HOME/sieve-as-code`, else `~/.config/sieve-as-code`; root; per account `<root>/<account>/filters/*.yaml` and `<root>/<account>/order.yaml`), `SIEVE_AS_CODE_STATE_DIR` (default `$XDG_STATE_HOME/sieve-as-code`, else `~/.local/state/sieve-as-code`; root; per account `<root>/<account>/backups/`, `retroactive/`, `audit.log`), `SIEVE_AS_CODE_ACCOUNT` (default account) and `SIEVE_AS_CODE_PROTON_CLI` (binary, default `proton`) (RVQ-Q11, RVQ-Q18, RVQ-Q24). The repository ships a `.env.example` listing them; the tool has no `.env` loader (RVQ-Q22). | Must |
 
 ---
 
@@ -117,14 +118,14 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 | ID | Requirement |
 |---|---|
 | NFR-SAFE.1 | No write to Proton occurs without a preceding plan output and an explicit `--yes` (or the typed confirmation of FR-RETRO.3). |
-| NFR-SAFE.2 | No filter content, sender or domain list is written to the audit log, logs or error messages. Audit lines hold names, counts, action, outcome and timestamp only (RVQ-Q10). |
+| NFR-SAFE.2 | No filter content, sender or domain list is written to the audit log or logs. Terminal error messages carry only the first line of `proton`'s own diagnostic, capped at 200 characters (RVQ-Q25). Audit lines hold names, counts, action, outcome and timestamp only (RVQ-Q10). |
 | NFR-SAFE.3 | The audit log is append-only JSONL: timestamp, kind (`write` or `check`), outcome, detail. |
 | NFR-REL.1 | Re-running `apply` with no changes produces an empty plan and no writes. |
 | NFR-REL.2 | An active `proton-cli` session is checked before any command that calls `proton-cli`; its absence fails loudly and never prompts interactively (`--no-input`). |
 | NFR-REL.3 | `proton-cli` version: the tested range is `>=4.3.0` (the version verified at specification time), documented in the README and defined in code. Below it the tool warns on stderr (detected vs tested) and continues; newer versions run silently; an unreadable version also warns and continues. Unparseable output or a rejected command fails with a `proton-cli` error (RVQ-Q9). |
 | NFR-OPS.1 | Errors name the file, field or command that failed and what to do next. |
 | NFR-TEST.1 | pytest with Hypothesis for parsing, validation and plan logic; `proton-cli` is faked only at its single subprocess boundary; no live-account tests in CI. A manual smoke test against a free account is optional (RVQ-Q15, RVQ-Q18). |
-| NFR-TEST.2 | An opt-in live smoke suite (`tests/live/`, skipped unless `SIEVE_AS_CODE_LIVE_TEST=1`, run against one named account) exercises create, update, enable/disable, reorder, backup, restore and `.sieve` import using only throwaway filters named with the reserved prefix `sieve-as-code-test-`. Each test deletes what it created in a `finally` block; the suite refuses to start if it cannot list filters and never touches a filter without the prefix (RVQ-Q19). |
+| NFR-TEST.2 | An opt-in live smoke suite (`tests/live/`, skipped unless `SIEVE_AS_CODE_LIVE_TEST=1`, run against one named account) exercises create, update, enable/disable, reorder, backup, restore, `.sieve` import and the rejection of an invalid script (exit 1, no filter left behind) using only throwaway filters named with the reserved prefix `sieve-as-code-test-`. Each test deletes what it created in a `finally` block; the suite refuses to start if it cannot list filters and never touches a filter without the prefix (RVQ-Q19). |
 | NFR-DEP.1 | Runtime dependencies: PyYAML only unless a gap is shown; pinned versions; versions, maintenance status and advisories checked before adding any. |
 
 ---
@@ -161,6 +162,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 - Mail features beyond filters (aliases, DNS, search, reading mail).
 - A structured filter vocabulary; a filter's content is its Sieve script.
 - Live-account tests in CI.
+- Windows (Linux and macOS only; RVQ-Q24).
 
 ---
 

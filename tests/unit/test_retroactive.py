@@ -184,9 +184,18 @@ def test_a_row_missing_a_field_is_a_client_error(
     fake_proton: FakeProton, client: ProtonClient, work_account: AccountPaths
 ) -> None:
     fake_proton.add_filter("News", NEWS)
-    del mail(fake_proton, "m1")["from_name"]
+    del mail(fake_proton, "m1")["subject"]
     with pytest.raises(ClientError, match="unexpected proton output"):
         preview(work_account, client, "News")
+
+
+def test_an_absent_sender_name_counts_as_empty(
+    fake_proton: FakeProton, client: ProtonClient, work_account: AccountPaths
+) -> None:
+    fake_proton.add_filter("News", NEWS)
+    del mail(fake_proton, "m1")["from_name"]
+    shown = preview(work_account, client, "News")
+    assert [e.message_id for e in shown.entries] == ["m1"]
 
 
 def test_a_failing_listing_propagates(

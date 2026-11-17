@@ -70,3 +70,4 @@ No gaps.
 
 - BR-18 gained one clause: a failing audit write on the refusal line raises.
 - The `messages list` fields were checked against the installed `proton-cli` 4.3.0 (names and types only): `id`, `subject`, `from_name`, `from_address`, `time`, `unread`, `labels`; system label ids 0, 3, 4, 6, 7 match the folder listings.
+- Found by running `retroactive-audit` on a real account (Unit 9 acceptance): Proton omits `from_name` for a sender without a display name, so BR-3 now treats an absent `from_name` as empty (`_retroactive.py:_message`, `test_an_absent_sender_name_counts_as_empty`). Minor gap, contained in this unit.

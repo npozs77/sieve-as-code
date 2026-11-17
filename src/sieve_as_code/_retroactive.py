@@ -149,7 +149,9 @@ class _Target:
 def _message(row: dict[str, Any]) -> MailMessage:
     """BR-3: one `messages list` row, or a ClientError for any other shape."""
     try:
-        text = [row[key] for key in ("id", "subject", "from_name", "from_address")]
+        # BR-3: Proton omits `from_name` for a sender without a display name.
+        text = [row[key] for key in ("id", "subject", "from_address")]
+        text.insert(2, row.get("from_name", ""))
         number = [row["time"], row["unread"]]
         labels = row["labels"]
         valid = (

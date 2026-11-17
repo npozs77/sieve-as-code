@@ -74,10 +74,10 @@ Step = tuple[Action, Callable[[], None]]
 
 
 def check_client(paths: AccountPaths, client: ProtonClient) -> None:
-    """BR-1: the client must be connected to the paths' account."""
+    """Unit 6 BR-1, Unit 8 BR-1: the client must be connected to the paths' account."""
     if paths.account != client.account or not client.fingerprint:
         raise ValidationError(
-            f"writing needs a client connected to account '{paths.account}'"
+            f"this needs a client connected to account '{paths.account}'"
         )
 
 

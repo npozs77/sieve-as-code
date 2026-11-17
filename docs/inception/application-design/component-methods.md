@@ -24,6 +24,6 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | backup | `write_backup(paths, client)` ★, `read_backup(ref, paths, fingerprint)`, `diff_backups(a, b, paths)` ★, `prune_backups(paths, keep)` ★ | Verified owner-only `Snapshot` (existing one when unchanged); `diff_backups` is A → B in snapshot mode; `prune_backups` only where retention is set; `BackupError` in `model` (Unit 5 design) |
 | apply | `apply_plan(paths, client, confirmed, allow_delete)` ★, `run_actions(...)` | Snapshot first, ordered writes, stop-on-failure `ApplyReport`; `run_actions` is the engine `restore` shares (Unit 6 design) |
 | restore | `restore(ref, paths, client, confirmed)` ★ | Pre-restore snapshot, writes, re-read; `RestoreReport` with `remaining` (Unit 6 design) |
-| sieve_eval | `evaluate(script, message)` | Actions, or `UnsupportedSieve` |
-| retroactive | `preview(name)` ★, `run(name, confirmed_name, reason)` ★, `status(snapshot)` ★, `audit_all()` ★ | FR-RETRO.* |
+| sieve_eval | `compile_script(script)`, `evaluate(compiled, message)` | `CompiledScript` or `UnsupportedSieve` (in `model`); `Outcome` of targets, flags, expire (Unit 8 design) |
+| retroactive | `preview(paths, client, name)` ★, `run(paths, client, name, confirmed_name, reason)` ★, `status(paths, client, ref)` ★, `audit_all(paths, client)` ★ | Read-only `RetroPreview`; gated `RetroReport` with snapshot; `RetroStatus`; `RetroAudit` (Unit 8 design) |
 | cli | `main(argv)` | Entry point |

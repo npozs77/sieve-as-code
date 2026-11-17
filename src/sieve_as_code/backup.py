@@ -35,8 +35,8 @@ _KEYS = {
 }
 _FILTER_KEYS = {"name", "raw_sieve", "enabled"}
 _RENAME_KEYS = {"original", "name"}
-_NAME = re.compile(r"\d{8}T\d{12}Z\.json")
-_NAME_TIME = "%Y%m%dT%H%M%S%fZ.json"
+SNAPSHOT_NAME = re.compile(r"\d{8}T\d{12}Z\.json")
+SNAPSHOT_TIME = "%Y%m%dT%H%M%S%fZ.json"
 
 
 @dataclass(frozen=True)
@@ -54,8 +54,8 @@ class Snapshot:
     unchanged: bool = False
 
 
-def _checksum(document: dict[str, Any]) -> str:
-    """BR-4: SHA-256 of the document without its checksum, canonical JSON."""
+def checksum(document: dict[str, Any]) -> str:
+    """Unit 5 BR-4; Unit 8 BR-21: SHA-256 of the document without its checksum."""
     body = {key: value for key, value in document.items() if key != "checksum"}
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode()).hexdigest()
@@ -76,12 +76,12 @@ def _document(
         ],
         "renames": [{"original": r.original, "name": r.name} for r in state.renames],
     }
-    document["checksum"] = _checksum(document)
+    document["checksum"] = checksum(document)
     return document
 
 
-def _create(path: Path, text: str) -> None:
-    """BR-5, BR-6: exclusive owner-only create; a failed write leaves no file."""
+def create_exclusive(path: Path, text: str) -> None:
+    """Unit 5 BR-5, BR-6; Unit 8 BR-21: exclusive owner-only create, no partial file."""
     try:
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     except OSError as exc:
@@ -91,7 +91,9 @@ def _create(path: Path, text: str) -> None:
     try:
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError:
-        raise BackupError(f"backup {path} already exists; run backup again") from None
+        raise BackupError(
+            f"snapshot {path} already exists; run the command again"
+        ) from None
     except OSError as exc:
         raise BackupError(f"cannot create {path}: {exc.strerror or exc}") from None
     try:
@@ -148,8 +150,8 @@ def write_backup(paths: AccountPaths, client: ProtonClient) -> Snapshot:
     now = datetime.now(UTC)
     created = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
     document = _document(state, created, paths, client.fingerprint)
-    path = paths.backups_dir / now.strftime(_NAME_TIME)
-    _create(path, json.dumps(document, indent=2) + "\n")
+    path = paths.backups_dir / now.strftime(SNAPSHOT_TIME)
+    create_exclusive(path, json.dumps(document, indent=2) + "\n")
     record_write(paths.audit_log, "backup", _detail(path, state))
     return Snapshot(path, created, paths.account, client.fingerprint, state)
 
@@ -230,7 +232,7 @@ def read_backup(
         raise BackupError(f"{path}: unsupported snapshot format {version!r}")
     if set(document) != _KEYS:
         raise BackupError(f"{path}: unexpected or missing fields")
-    if document["checksum"] != _checksum(document):
+    if document["checksum"] != checksum(document):
         raise BackupError(f"{path}: checksum mismatch; the file was altered or damaged")
     state = _state(document, path)
     recorded = _text_field(document, "fingerprint", path)
@@ -260,14 +262,14 @@ def diff_backups(a: str | Path, b: str | Path, paths: AccountPaths) -> PlanResul
     return diff(second.state, first.state, None)
 
 
-def _candidates(backups_dir: Path) -> list[tuple[str, datetime]]:
+def snapshot_candidates(backups_dir: Path) -> list[tuple[str, datetime]]:
     """BR-16: snapshot-named regular files with their name's UTC time, oldest first."""
     found: list[tuple[str, datetime]] = []
     for item in backups_dir.glob("*.json") if backups_dir.is_dir() else ():
-        if not (_NAME.fullmatch(item.name) and item.is_file()):
+        if not (SNAPSHOT_NAME.fullmatch(item.name) and item.is_file()):
             continue
         try:
-            when = datetime.strptime(item.name, _NAME_TIME)
+            when = datetime.strptime(item.name, SNAPSHOT_TIME)
             found.append((item.name, when.replace(tzinfo=UTC)))
         except ValueError:
             continue
@@ -276,7 +278,7 @@ def _candidates(backups_dir: Path) -> list[tuple[str, datetime]]:
 
 def prune_backups(paths: AccountPaths, keep: Retention) -> tuple[str, ...]:
     """Remove snapshots outside the retention limits; return their names. BR-16-18."""
-    files = _candidates(paths.backups_dir)
+    files = snapshot_candidates(paths.backups_dir)
     if not files or (keep.keep_days is None and keep.keep_last is None):
         return ()
     cutoff = datetime.now(UTC) - timedelta(days=keep.keep_days or 0)

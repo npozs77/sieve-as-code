@@ -39,6 +39,7 @@ class FakeProton:
     folders: list[dict[str, Any]] = field(default_factory=list)
     labels: list[dict[str, Any]] = field(default_factory=list)
     messages: list[dict[str, Any]] = field(default_factory=list)
+    recipients: dict[str, list[str]] = field(default_factory=dict)
     failures: dict[str, tuple[int, str]] = field(default_factory=dict)
     outputs: dict[str, str] = field(default_factory=dict)
     hangs: set[str] = field(default_factory=set)
@@ -127,15 +128,28 @@ class FakeProton:
             ("mail", "settings", "labels", "create"): lambda a, _: self._create_target(
                 a, self.labels
             ),
-            ("mail", "messages", "list"): lambda _a, _: self._listing(
-                "messages", self.messages
-            ),
+            ("mail", "messages", "list"): self._messages_list,
         }
 
     def _account_get(self, args: list[str], stdin: str | None) -> tuple[int, Any, str]:
         if not self.signed_in:
             return 2, None, "not signed in"
         return 0, {"id": self.account_id, "profile": "work", "session": "valid"}, ""
+
+    def _messages_list(
+        self, args: list[str], stdin: str | None
+    ) -> tuple[int, Any, str]:
+        """`recipients` maps a message id to its addresses; `--to` searches them."""
+        assert args[:4] == ["--folder", "all", "--limit", "0"]
+        rows = self.messages
+        if args[4:5] == ["--to"]:
+            key = args[5].casefold()
+            rows = [
+                row
+                for row in rows
+                if any(key in a.casefold() for a in self.recipients.get(row["id"], []))
+            ]
+        return self._listing("messages", rows)
 
     def _listing(self, key: str, rows: list[dict[str, Any]]) -> tuple[int, Any, str]:
         return 0, {key: rows, "count": len(rows)}, ""

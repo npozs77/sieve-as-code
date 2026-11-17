@@ -26,6 +26,15 @@ class BackupError(SieveAsCodeError):
     """A snapshot is unreadable, altered, unsupported, foreign or not writable."""
 
 
+class UnsupportedSieve(SieveAsCodeError):
+    """A script uses Sieve outside the previewable subset (Unit 8 BR-6)."""
+
+    def __init__(self, construct: str, line: int) -> None:
+        super().__init__(f"unsupported Sieve: {construct} at line {line}")
+        self.construct = construct
+        self.line = line
+
+
 @dataclass(frozen=True)
 class Filter:
     """One Proton filter; `live_id` is None for declared-only filters. BR-8."""

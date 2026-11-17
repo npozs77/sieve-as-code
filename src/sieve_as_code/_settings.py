@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from sieve_as_code.model import ValidationError
+from sieve_as_code._model import ValidationError
 
 _APP_DIR = "sieve-as-code"
 _DEFAULT_ACCOUNT = "default"
@@ -86,6 +86,33 @@ def account_paths(account: str) -> AccountPaths:
         backups_dir=state_root / "backups",
         retroactive_dir=state_root / "retroactive",
         audit_log=state_root / "audit.log",
+    )
+
+
+@dataclass(frozen=True)
+class Retention:
+    """Optional snapshot retention limits; None means not set. BR-15."""
+
+    keep_days: int | None = None
+    keep_last: int | None = None
+
+
+def _positive(variable: str) -> int | None:
+    """BR-15: unset is None; a set value must be ASCII digits and at least 1."""
+    value = _env(variable)
+    if value is None:
+        return None
+    if not (value.isascii() and value.isdigit() and int(value) >= 1):
+        raise ValidationError(
+            f"{variable} must be a whole number of 1 or more, got {value!r}"
+        )
+    return int(value)
+
+
+def retention() -> Retention:
+    """Return the retention limits from the environment. BR-15."""
+    return Retention(
+        _positive("SIEVE_AS_CODE_KEEP_DAYS"), _positive("SIEVE_AS_CODE_KEEP_LAST")
     )
 
 

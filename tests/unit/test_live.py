@@ -4,10 +4,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.live import _number_duplicates, discover, discover_targets
-from sieve_as_code.model import Filter, Targets
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._live import _number_duplicates, discover, discover_targets
+from sieve_as_code._model import Filter, Targets
+from sieve_as_code._settings import AccountPaths
 from tests.fake_proton import FakeProton
 
 READ_ONLY = {

@@ -266,3 +266,33 @@ How do live-only filters (present in Proton, absent locally) behave across plan,
 [Suggested]: A
 [Justification]: A library caller of `plan(paths, client)` would need `account_paths` and `connect` just to start, and those would become frozen API: the backend, the on-disk layout or the checks could never change without a breaking release. Keyword-only parameters, additive results and a single declared surface let the tool grow in 0.x and 1.x without breaking callers; the cheapest time to make modules private is before the first release.
 [Answer]: A — the user agreed; the module rename happens in Unit 9.
+
+### Q30. Identical backups and retention
+Frequent scheduled backups of unchanged filters pile up identical files. What does `backup` do when nothing changed, and how are old snapshots removed?
+- A) Skip when live equals the latest valid snapshot (also for the `apply` and `restore` snapshots); optional retention by newest N and/or days, configured by environment variables with CLI flags overriding, off by default
+- B) Always write; the user deletes old files
+- C) Prune by default
+
+[Suggested]: A
+[Justification]: Filters change rarely, so a skip keeps the history to real changes and makes "keep the last N" mean N distinct states; an identical snapshot is as good a restore point. Deleting is destructive, so it stays opt-in.
+[Answer]: A — the user proposed it; the skip applies to the `apply` and `restore` snapshots too; retention by environment variables.
+
+### Q31. Proton's generated spam guard in the retroactive preview
+Real-account acceptance found that most filters the Proton web UI generates open with a guard (`if allof (environment :matches "vnd.proton.spam-threshold" "*", spamtest :value "ge" :comparator "i;ascii-numeric" "${1}") { return; }`), which the preview subset rejects, so those filters were reported not previewable (FR-RETRO.2). What does the preview do with it?
+- A) Recognise exactly that guard at the start of the script, with a `return;` block or an empty block, and ignore it; every other use of `environment`, `spamtest` or `return` stays unsupported
+- B) Leave it unsupported
+- C) Support `environment`, `spamtest` and `return` in general
+
+[Suggested]: A
+[Justification]: The preview already excludes Spam (Unit 8 BR-4), so the guard cannot change which messages are listed, and an empty block changes nothing at all. Matching the exact shape keeps "never guessed" intact; general support (C) is a larger evaluator for no observed need.
+[Answer]: A — found by running `retroactive-audit` on a real account; the user approved the change (Gate 3).
+
+### Q32. What `plan` shows and how it exits
+The first plan output listed changed filters by name only and `plan` exited 0 on drift. The tool it replaces printed each script change as a diff and exited non-zero when anything differed. Which behaviour does `plan` have?
+- A) Feature parity: show the script of each created filter and a unified diff of each content change (also in the `apply` and `restore` plans), and exit 1 on drift
+- B) Names only, exit 0 on drift, with a later `--check` option
+- C) Diff only; keep exit 0
+
+[Suggested]: A
+[Justification]: A write cannot be reviewed before `--yes` without seeing what changes, and an unattended run needs a failing exit on drift without an extra option. Script text goes to the terminal only; the audit log stays free of it (NFR-SAFE.2).
+[Answer]: A — the user asked for feature parity in 0.1.0 and approved the change (Gate 3).

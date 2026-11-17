@@ -4,7 +4,13 @@ import dataclasses
 
 import pytest
 
-from sieve_as_code.model import Filter, FilterOrder, SieveAsCodeError, ValidationError
+from sieve_as_code._model import (
+    BackupError,
+    Filter,
+    FilterOrder,
+    SieveAsCodeError,
+    ValidationError,
+)
 
 
 def test_filter_defaults_to_enabled_without_live_id() -> None:  # BR-8
@@ -29,3 +35,7 @@ def test_filter_order_keeps_sequence_and_is_immutable() -> None:  # BR-8
 
 def test_validation_error_is_a_package_error() -> None:
     assert issubclass(ValidationError, SieveAsCodeError)
+
+
+def test_backup_error_is_a_package_error() -> None:  # Unit 5 BR-10
+    assert issubclass(BackupError, SieveAsCodeError)

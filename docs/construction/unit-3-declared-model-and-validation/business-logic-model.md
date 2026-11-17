@@ -47,7 +47,7 @@ filters, order, AccountPaths
     ▼
 [1] file name per filter                         (BR-10)
     ▼
-[2] collision check, NFC + casefold              (BR-11)
+[2] collision numbering, NFC + casefold              (BR-20: number, no error)
     │        └─[collision] ValidationError, nothing rendered
     ▼
 [3] normalise script, build YAML text            (BR-12, BR-13)
@@ -103,7 +103,7 @@ enabled: false   # omitted when true
 | Load 2 | Unbalanced or unterminated script, extension used without `require` (BR-16, BR-17) | `ValidationError` with file, line and extension, no script text |
 | Load 3 / validate | Duplicate name (BR-6) | `ValidationError` with name (and files) |
 | Load 4 / validate | Bad `sequence` shape, duplicate, undeclared or missing entry (BR-7, BR-8) | `ValidationError` with order file and name |
-| Render 2 | File-name collision (BR-11) | `ValidationError` with both filter names |
+| Render 2 | File-name collision | Superseded by BR-20: the later file name gets ` (n)`, no error | Info |
 
 ---
 
@@ -112,7 +112,7 @@ enabled: false   # omitted when true
 | Input | Result |
 |-------|--------|
 | `name: "a/b"` | file `a_b.yaml`; loads under name `a/b` |
-| filters `a/b` and `a_b` | render refuses (BR-11) |
+| filters `a/b` and `a_b` | `a_b.yaml` and `a_b (1).yaml` (BR-20) |
 | filters `Foo` and `foo` | load and validate accept (two names); render refuses |
 | filter named `.hidden` | file `_hidden.yaml` |
 | file `weird-name.yaml` with `name: other` | loads as `other` (BR-10) |
@@ -153,7 +153,7 @@ enabled: false   # omitted when true
 | BR-7, BR-8 | Unit | bad shape, extra key, duplicate / undeclared / missing entry | `tests/unit/test_declared.py` |
 | BR-9 | PBT | error messages never contain the script text; load leaves the directory unchanged | `tests/unit/test_declared.py` |
 | BR-10 | PBT | for any name, file name has no `/`, `\`, NUL, does not start with `.`, ends `.yaml` | `tests/unit/test_declared.py` |
-| BR-11 | Unit | `Foo`/`foo`, `a/b`/`a_b`, `.x`/`_x`, NFC vs NFD `é` collide; distinct names do not | `tests/unit/test_declared.py` |
+| BR-11, BR-20 | Unit | `Foo`/`foo`, `a/b`/`a_b`, `.x`/`_x`, NFC vs NFD `é` collide; distinct names do not | `tests/unit/test_declared.py` |
 | BR-12 | PBT | `normalize_whitespace` is idempotent; no tab or trailing space remains | `tests/unit/test_declared.py` |
 | BR-13, BR-14 | Unit | exact text for enabled, disabled, multi-line, non-ASCII; paths; nothing written | `tests/unit/test_declared.py` |
 | BR-15 | PBT | render → write → load round trip gives equal names, flags, sequence, normalised scripts | `tests/unit/test_declared.py` |

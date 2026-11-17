@@ -15,4 +15,5 @@
 | BR-11 | The audit log is only ever opened for append: existing lines are never read, changed or removed. A missing log is created with mode `0o600` and its missing directory with `0o700`. | NFR-SAFE.3 |
 | BR-12 | An audit write that fails on I/O → `SieveAsCodeError` naming the log path; the audit module never swallows it (callers decide, FR-APPLY.4). | NFR-OPS.1 |
 | BR-13 | Runtime dependencies are PyYAML only, as a compatible range (`>=6.0.3,<7`) whose exact version `uv.lock` fixes; dev tools pinned exactly; `requires-python >=3.12`; console script `sieve-as-code` points at `sieve_as_code.cli:main`. | NFR-DEP.1, CON-5 |
-| BR-14 | `.env.example` lists exactly the four `SIEVE_AS_CODE_*` variables; `make quality` runs ruff, black, mypy, vulture and the tests. | FR-CLI.3, implementation-plan |
+| BR-14 | `.env.example` lists exactly the six `SIEVE_AS_CODE_*` variables (the four of BR-1, BR-4, BR-7 and the two of BR-15); `make quality` runs ruff, black, mypy, vulture and the tests. | FR-CLI.3, implementation-plan |
+| BR-15 | Addendum (backup retention). `retention()` reads `SIEVE_AS_CODE_KEEP_DAYS` and `SIEVE_AS_CODE_KEEP_LAST` (BR-2: blank is unset). An unset variable gives None; a set one must be ASCII digits with a value of 1 or more, else `ValidationError` naming the variable. | FR-BAK.6, FR-CLI.3 |

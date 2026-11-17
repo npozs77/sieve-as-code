@@ -2,8 +2,8 @@
 
 import pytest
 
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.model import ClientError
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._model import ClientError
 from tests.fake_proton import FakeProton
 
 

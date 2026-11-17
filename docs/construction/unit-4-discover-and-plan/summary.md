@@ -42,6 +42,7 @@ No gaps.
 | BR-12 | `_flags` | `test_destructive_extension_*`, `test_flags_do_not_change_the_outcome` |
 | BR-18 | `plan` | `test_plan_refuses_a_client_connected_to_another_account` |
 | BR-19 | `diff` | `test_snapshot_mode_skips_target_and_flag_checks` |
+| BR-20 | `_plan.py:_entries` | `test_create_and_content_entries_carry_the_normalised_scripts` |
 | BR-13 | `plan`, `PlanResult.outcome` | `test_plan_audits_*`, `test_plan_does_not_audit_*`, `test_plan_raises_when_the_audit_*` |
 | BR-15 | `diff` | `test_diff_of_a_state_with_itself_*` (PBT), `test_applying_a_plan_leaves_nothing_to_plan` (model-based PBT) |
 | BR-17 | `declared.py:script_facts` | `test_declared.py`: `test_script_facts_*` |
@@ -55,3 +56,4 @@ No gaps.
 
 - Built-in mailbox table (BR-10) is a superset (`inbox, archive, spam, trash, drafts, draft, sent, starred, all mail`): Proton's docs give no list and it accepts any target at filter creation (live probe, 2026-10-31), so a built-in is never reported missing. `inbox` and `spam` are seen in real filters; the rest stay unverified.
 - BR-9's "new filters land last" was confirmed live on 4.3.0 (two creates landed at the end); the live smoke suite keeps it as a regression check.
+- Change (Gate 3 approved, RVQ-Q32): `PlanEntry` gains `before` and `after` (BR-20) so the CLI can show script changes; plan parity with the earlier output.

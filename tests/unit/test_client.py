@@ -9,9 +9,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.client import TESTED_MINIMUM, ProtonClient, connect, fingerprint_of
-from sieve_as_code.model import ClientError
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._client import TESTED_MINIMUM, ProtonClient, connect, fingerprint_of
+from sieve_as_code._model import ClientError
+from sieve_as_code._settings import AccountPaths
 from tests.fake_proton import FakeProton
 
 PREFIX = ["proton", "--profile", "work", "--no-input", "--output", "json"]
@@ -189,7 +189,7 @@ def test_warning_iff_below_tested_minimum(version: tuple[int, int, int]) -> None
         mock.patch.object(subprocess, "run", fake.run),
         mock.patch("sys.stderr") as stderr,
     ):
-        from sieve_as_code.client import _check_version
+        from sieve_as_code._client import _check_version
 
         _check_version("proton")
     assert bool(stderr.write.called) == (version < TESTED_MINIMUM)

@@ -9,15 +9,17 @@ import yaml
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from sieve_as_code.declared import (
+from sieve_as_code._declared import (
+    free_filename,
     load_declared,
+    load_local,
     normalize_whitespace,
     render,
     script_facts,
     validate_declared,
 )
-from sieve_as_code.model import Filter, FilterOrder, ValidationError
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._model import Filter, FilterOrder, ValidationError
+from sieve_as_code._settings import AccountPaths
 
 REQUIRE = 'require ["fileinto", "copy", "regex", "variables", "imap4flags"];\n'
 STATEMENTS = [
@@ -371,14 +373,61 @@ def test_rendered_file_name_stays_inside_the_directory(name: str) -> None:
         ("STRASSE", "straße"),
     ],
 )
-def test_render_refuses_colliding_file_names_naming_both_filters(
+def test_render_numbers_colliding_file_names_in_input_order(
     paths: AccountPaths, names: tuple[str, str]
-) -> None:
+) -> None:  # BR-20
     filters = [Filter(names[0], "keep;"), Filter(names[1], "stop;")]
-    with pytest.raises(ValidationError) as error:
-        render(filters, FilterOrder(names), paths)
-    assert repr(names[0]) in str(error.value)
-    assert repr(names[1]) in str(error.value)
+    rendered = render(filters, FilterOrder(names), paths)
+    files = sorted(p.name for p in rendered if p != paths.order_file)
+    assert len(files) == 2
+    assert any(" (1).yaml" in file for file in files)
+    texts = {
+        p.name: yaml.safe_load(t) for p, t in rendered.items() if p != paths.order_file
+    }
+    assert {entry["name"] for entry in texts.values()} == set(names)
+
+
+@pytest.mark.parametrize(
+    ("taken", "expected"),
+    [
+        ([], "a_b.yaml"),
+        (["A_B.YAML"], "a_b (1).yaml"),
+        (["a_b.yaml", "a_b (1).yaml"], "a_b (2).yaml"),
+        (["a_b.yaml", "a_b (2).yaml"], "a_b (1).yaml"),
+    ],
+)
+def test_free_filename_takes_the_lowest_free_number(
+    taken: list[str], expected: str
+) -> None:  # BR-20
+    assert free_filename("a/b", taken) == expected
+
+
+def test_load_local_without_files_is_empty(paths: AccountPaths) -> None:  # BR-19
+    assert load_local(paths) == ({}, None)
+
+
+def test_load_local_returns_files_and_order_without_cross_check(
+    paths: AccountPaths,
+) -> None:  # BR-19
+    paths.filters_dir.mkdir(parents=True)
+    (paths.filters_dir / "x.yaml").write_text("name: one\nraw_sieve: keep;\n")
+    paths.order_file.write_text("sequence: [ghost]\n")
+    files, sequence = load_local(paths)
+    assert files == {paths.filters_dir / "x.yaml": Filter("one", "keep;")}
+    assert sequence == ("ghost",)
+
+
+def test_load_local_rejects_duplicate_names_and_bad_files(
+    paths: AccountPaths,
+) -> None:  # BR-19
+    paths.filters_dir.mkdir(parents=True)
+    for file in ("a.yaml", "b.yaml"):
+        (paths.filters_dir / file).write_text("name: one\nraw_sieve: keep;\n")
+    with pytest.raises(ValidationError, match="duplicate"):
+        load_local(paths)
+    (paths.filters_dir / "b.yaml").write_text("name: two\nextra: 1\n")
+    with pytest.raises(ValidationError, match="unknown key"):
+        load_local(paths)
 
 
 def test_render_accepts_distinct_names(paths: AccountPaths) -> None:

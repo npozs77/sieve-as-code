@@ -152,6 +152,7 @@ Known limit: on a case-insensitive filesystem `Work` and `work` share a director
 |-------------|-----------|-----------|--------------|
 | BR-1 | Unit | argument beats env beats `default` | `tests/unit/test_settings.py` |
 | BR-2 | Unit | empty and whitespace-only values are unset; value stripped | `tests/unit/test_settings.py` |
+| BR-15 | Unit | unset, blank → None; `7` → 7; `0`, `-1`, `1.5`, `abc`, `²` → `ValidationError` naming the variable | `tests/unit/test_settings.py` |
 | BR-3 | PBT | any name containing `/`, `\`, NUL, `..` or a leading `.` is rejected; any other non-empty generated name is accepted | `tests/unit/test_settings.py` |
 | BR-3 | Unit | boundaries: `""`, `"."`, `".."`, `".a"`, `"a."`, `"a.b"`, `"a..b"` | `tests/unit/test_settings.py` |
 | BR-4 | Unit | each root: variable beats XDG beats home default; relative XDG ignored; no home → error naming that variable (mirror for both roots) | `tests/unit/test_settings.py` |

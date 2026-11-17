@@ -58,10 +58,10 @@
 
 ## Unit 5 — Backup
 
-**Capability**: FR-BAK.2, FR-BAK.3, FR-BAK.5, FR-ACCT.4
+**Capability**: FR-BAK.2, FR-BAK.3, FR-BAK.5, FR-BAK.6, FR-ACCT.4
 **Components**: Backup
 **Delivers**:
-- `backup.py` — versioned, checksummed, exclusive-create snapshots; read verification; diff
+- `backup.py` — versioned, checksummed, exclusive-create snapshots, skipped when unchanged; read verification; diff; `prune_backups`
 - Tests for tamper detection and no-overwrite
 
 **Input**: live state or snapshots · **Output**: snapshot file or diff
@@ -112,6 +112,7 @@
 - `cli.py`, `__init__.py` (`__all__`, `__version__`, one wrapper per ★ function, RVQ-Q29), console-script entry
 - Rename the internal modules with a leading underscore (`_plan.py`, …) and update imports and tests
 - README (tested `proton-cli` range, rename note, API list), CHANGELOG
+- `backup` calls `prune_backups` after each run with `retention()` limits, overridden by `--keep-days` and `--keep-last` (FR-BAK.6)
 - CLI tests: confirmations, exit codes
 - `tests/live/` opt-in smoke suite with throwaway-filter cleanup (NFR-TEST.2)
 

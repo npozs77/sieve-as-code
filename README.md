@@ -7,7 +7,7 @@ Proton Mail Sieve filters as code: plan before apply, backup before every write,
 ## Requirements
 
 - Python 3.12 or newer.
-- [`proton-cli`](https://github.com/roman-16/proton-cli) 4.3.0 or newer (`proton`), signed in to the account you manage.
+- [`proton-cli`](https://github.com/roman-16/proton-cli) 4.3.0 or newer (`proton`), signed in to every account you manage (one `proton` profile per account).
 
 ## Configuration
 
@@ -22,6 +22,25 @@ Environment variables only; [`.env.example`](.env.example) lists them.
 | `SIEVE_AS_CODE_KEEP_DAYS` | unset | `backup` keeps snapshots newer than this many days (with `KEEP_LAST`, either keeps one) |
 | `SIEVE_AS_CODE_KEEP_LAST` | unset | `backup` keeps this many newest snapshots; both unset means nothing is pruned |
 
+## Multiple accounts
+
+An account is a `proton` profile name. Each account has its own declared files, backups, retroactive snapshots and audit log; a command acts on exactly one account.
+
+```sh
+proton --profile personal account login     # once per account
+proton --profile personal account get       # check: Session valid, Unlocked yes
+export SIEVE_AS_CODE_ACCOUNT=personal       # default account; --account NAME overrides it per command
+```
+
+Layout (default roots; see [Configuration](#configuration)):
+
+```
+~/.config/sieve-as-code/<account>/{filters/, order.yaml, account.id}
+~/.local/state/sieve-as-code/<account>/{backups/, retroactive/, audit.log}
+```
+
+`account.id` holds a fingerprint of the Proton account, written on first use. If a profile is later signed in to a different Proton account, every command stops with "profile '<account>' now belongs to a different Proton account", and `restore` refuses a snapshot taken from another account. Delete `account.id` only if you mean to adopt the new account.
+
 ## Planned usage
 
 ```sh
@@ -35,7 +54,7 @@ sieve-as-code restore [BACKUP] --yes # pre-restore snapshot, then roll back
 sieve-as-code apply-retroactive NAME # preview, typed confirmation, then run on existing mail
 ```
 
-Also planned: `retroactive-status` and `retroactive-audit`, and a Python API with one function per command.
+Every command takes `--account NAME`. Also planned: `retroactive-status` and `retroactive-audit`, and a Python API with one function per command.
 
 Intended behaviour:
 - `plan` is the drift detector and reports structure problems in the declared files before anything is written.
@@ -68,3 +87,7 @@ sequence:
 > **Use at your own risk.** This tool changes the filters of a real mailbox through an unofficial client, and a retroactive run can move years of mail with no way to cancel it. It is provided as is, without warranty (see [`LICENSE`](LICENSE)). Read the plan, keep the backups, and test on an account you can afford to break.
 
 Licence: MIT.
+
+## Integration tests
+
+`make integration` runs against two real accounts and is skipped otherwise: `SIEVE_AS_CODE_IT_ACCOUNTS=<profile>,<other profile>` enables the read-only isolation tests. Add `SIEVE_AS_CODE_IT_WRITE=1` for an apply/restore round trip that writes one disabled, unmatchable filter to the second account, which must have no filters, and removes it. Profile names are never stored in the repository.

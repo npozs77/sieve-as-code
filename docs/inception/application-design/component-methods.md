@@ -26,4 +26,5 @@ Public functions only. Signatures are design intent; Functional Design fixes the
 | restore | `restore(ref, paths, client, confirmed)` ★ | Pre-restore snapshot, writes, re-read; `RestoreReport` with `remaining` (Unit 6 design) |
 | sieve_eval | `compile_script(script)`, `evaluate(compiled, message)` | `CompiledScript` or `UnsupportedSieve` (in `model`); `Outcome` of targets, flags, expire (Unit 8 design) |
 | retroactive | `preview(paths, client, name)` ★, `run(paths, client, name, confirmed_name, reason)` ★, `status(paths, client, ref)` ★, `audit_all(paths, client)` ★ | Read-only `RetroPreview`; gated `RetroReport` with snapshot; `RetroStatus`; `RetroAudit` (Unit 8 design) |
-| cli | `main(argv)` | Entry point |
+| cli | `main(argv=None) -> int` | Entry point; argparse dispatch, renders results, maps outcomes to exit codes 0/1/2/130 (Unit 9 design) |
+| public API | `discover`, `plan`, `apply`, `import_live`, `import_sieve_files`, `backup`, `backup_diff`, `restore`, `retroactive_preview`, `apply_retroactive`, `retroactive_status`, `retroactive_audit`, `load_declared`, `validate_declared` | Keyword-only wrappers in `__init__.py`; `backup` also prunes (Unit 9 design) |

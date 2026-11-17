@@ -276,7 +276,8 @@ def test_filter_is_written_to_the_file_that_holds_it(
 
 
 @pytest.mark.parametrize(
-    ("live", "local_file"), [("a/b", "a_b.yaml"), ("Foo", "foo.yaml")]
+    ("live", "local_file", "numbered"),
+    [("a/b", "a_b.yaml", "a_b (1).yaml"), ("Foo", "foo.yaml", "Foo (1).yaml")],
 )
 def test_clashing_file_name_gets_a_number_and_the_other_file_is_untouched(
     work_account: AccountPaths,
@@ -284,6 +285,7 @@ def test_clashing_file_name_gets_a_number_and_the_other_file_is_untouched(
     fake_proton: FakeProton,
     live: str,
     local_file: str,
+    numbered: str,
 ) -> None:  # BR-13
     fake_proton.add_filter(live)
     write_local(work_account, {local_file: filter_yaml("other")}, ["other"])
@@ -292,7 +294,8 @@ def test_clashing_file_name_gets_a_number_and_the_other_file_is_untouched(
     assert (work_account.filters_dir / local_file).read_bytes() == before
     files, _ = load_local(work_account)
     assert {f.name for f in files.values()} == {live, "other"}
-    assert (work_account.filters_dir / f"{local_file[:-5]} (1).yaml").exists()
+    # Compare names, not `.exists()`: a case-insensitive filesystem hides the spelling.
+    assert numbered in {path.name for path in work_account.filters_dir.iterdir()}
 
 
 def test_write_failure_names_the_path_and_a_rerun_completes(

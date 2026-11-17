@@ -2,8 +2,8 @@
 
 from dataclasses import replace
 
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.model import Filter, FilterOrder, FilterSet, Rename, Targets
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._model import Filter, FilterOrder, FilterSet, Rename, Targets
 
 
 def _number_duplicates(

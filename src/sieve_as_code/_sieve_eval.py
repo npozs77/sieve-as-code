@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from sieve_as_code.model import UnsupportedSieve
+from sieve_as_code._model import UnsupportedSieve
 
 _MAX_RECIPIENT_KEYS = 10  # BR-10
 _FLAGS = {"\\seen", "\\flagged"}  # BR-12

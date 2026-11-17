@@ -9,8 +9,8 @@ from typing import Any
 
 import yaml
 
-from sieve_as_code.model import Filter, FilterOrder, ValidationError
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._model import Filter, FilterOrder, ValidationError
+from sieve_as_code._settings import AccountPaths
 
 _FILTER_KEYS = frozenset({"name", "raw_sieve", "enabled"})
 

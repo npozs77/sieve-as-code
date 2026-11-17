@@ -9,7 +9,7 @@ import yaml
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from sieve_as_code.declared import (
+from sieve_as_code._declared import (
     free_filename,
     load_declared,
     load_local,
@@ -18,8 +18,8 @@ from sieve_as_code.declared import (
     script_facts,
     validate_declared,
 )
-from sieve_as_code.model import Filter, FilterOrder, ValidationError
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._model import Filter, FilterOrder, ValidationError
+from sieve_as_code._settings import AccountPaths
 
 REQUIRE = 'require ["fileinto", "copy", "regex", "variables", "imap4flags"];\n'
 STATEMENTS = [

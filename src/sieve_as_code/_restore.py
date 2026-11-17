@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from sieve_as_code.apply import (
+from sieve_as_code._apply import (
     Action,
     ApplyReport,
     FailedAction,
@@ -11,13 +11,13 @@ from sieve_as_code.apply import (
     check_client,
     run_actions,
 )
-from sieve_as_code.audit import record_check
-from sieve_as_code.backup import Snapshot, read_backup
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.live import discover
-from sieve_as_code.model import ClientError, FilterSet, SieveAsCodeError
-from sieve_as_code.plan import PlanEntry, PlanResult, diff
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._audit import record_check
+from sieve_as_code._backup import Snapshot, read_backup
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._live import discover
+from sieve_as_code._model import ClientError, FilterSet, SieveAsCodeError
+from sieve_as_code._plan import PlanEntry, PlanResult, diff
+from sieve_as_code._settings import AccountPaths
 
 
 def _is_clean(remaining: PlanResult) -> bool:

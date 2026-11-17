@@ -11,20 +11,20 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from sieve_as_code import apply as apply_module
-from sieve_as_code.apply import Action, ApplyReport, apply_plan
-from sieve_as_code.backup import write_backup
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.declared import render
-from sieve_as_code.model import (
+from sieve_as_code import _apply as apply_module
+from sieve_as_code._apply import Action, ApplyReport, apply_plan
+from sieve_as_code._backup import write_backup
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._declared import render
+from sieve_as_code._model import (
     BackupError,
     Filter,
     FilterOrder,
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.plan import PlanResult
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._plan import PlanResult
+from sieve_as_code._settings import AccountPaths
 from tests.fake_proton import FakeProton
 
 FRESH = settings(suppress_health_check=[HealthCheck.function_scoped_fixture])

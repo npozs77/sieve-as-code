@@ -7,18 +7,18 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal
 
-from sieve_as_code.apply import check_client
-from sieve_as_code.audit import record_check, record_write
-from sieve_as_code.backup import (
+from sieve_as_code._apply import check_client
+from sieve_as_code._audit import record_check, record_write
+from sieve_as_code._backup import (
     SNAPSHOT_TIME,
     checksum,
     create_exclusive,
     snapshot_candidates,
 )
-from sieve_as_code.client import MailTarget, ProtonClient
-from sieve_as_code.declared import load_local, normalize_whitespace
-from sieve_as_code.live import discover
-from sieve_as_code.model import (
+from sieve_as_code._client import MailTarget, ProtonClient
+from sieve_as_code._declared import load_local, normalize_whitespace
+from sieve_as_code._live import discover
+from sieve_as_code._model import (
     BackupError,
     ClientError,
     Filter,
@@ -26,8 +26,8 @@ from sieve_as_code.model import (
     UnsupportedSieve,
     ValidationError,
 )
-from sieve_as_code.settings import AccountPaths
-from sieve_as_code.sieve_eval import (
+from sieve_as_code._settings import AccountPaths
+from sieve_as_code._sieve_eval import (
     CompiledScript,
     MailMessage,
     Outcome,

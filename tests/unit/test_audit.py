@@ -11,8 +11,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.audit import Scalar, record_check, record_write
-from sieve_as_code.model import SieveAsCodeError
+from sieve_as_code._audit import Scalar, record_check, record_write
+from sieve_as_code._model import SieveAsCodeError
 
 Recorder = Callable[[Path, str, Mapping[str, Scalar]], None]
 

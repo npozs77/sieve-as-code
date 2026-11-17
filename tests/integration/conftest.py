@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from sieve_as_code.settings import AccountPaths, account_paths
+from sieve_as_code._settings import AccountPaths, account_paths
 
 ACCOUNTS_VARIABLE = "SIEVE_AS_CODE_IT_ACCOUNTS"
 WRITE_VARIABLE = "SIEVE_AS_CODE_IT_WRITE"

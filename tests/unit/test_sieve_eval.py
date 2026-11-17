@@ -7,8 +7,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.model import SieveAsCodeError, UnsupportedSieve
-from sieve_as_code.sieve_eval import MailMessage, Outcome, compile_script, evaluate
+from sieve_as_code._model import SieveAsCodeError, UnsupportedSieve
+from sieve_as_code._sieve_eval import MailMessage, Outcome, compile_script, evaluate
 
 
 def message(**fields: object) -> MailMessage:

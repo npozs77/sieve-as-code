@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from sieve_as_code.model import ValidationError
+from sieve_as_code._model import ValidationError
 
 _APP_DIR = "sieve-as-code"
 _DEFAULT_ACCOUNT = "default"

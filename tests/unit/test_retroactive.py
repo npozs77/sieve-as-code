@@ -13,22 +13,22 @@ import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from sieve_as_code.backup import SNAPSHOT_TIME, checksum
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.model import (
+from sieve_as_code._backup import SNAPSHOT_TIME, checksum
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._model import (
     BackupError,
     ClientError,
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.retroactive import (
+from sieve_as_code._retroactive import (
     RetroReport,
     audit_all,
     preview,
     run,
     status,
 )
-from sieve_as_code.settings import AccountPaths, account_paths
+from sieve_as_code._settings import AccountPaths, account_paths
 from tests.fake_proton import FakeProton
 
 FRESH = settings(suppress_health_check=[HealthCheck.function_scoped_fixture])

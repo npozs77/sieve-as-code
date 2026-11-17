@@ -6,23 +6,23 @@ from contextlib import suppress
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.declared import (
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._declared import (
     free_filename,
     load_local,
     normalize_whitespace,
     render,
     validate_declared,
 )
-from sieve_as_code.live import discover
-from sieve_as_code.model import (
+from sieve_as_code._live import discover
+from sieve_as_code._model import (
     Filter,
     FilterOrder,
     Rename,
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._settings import AccountPaths
 
 _SIEVE_SUFFIX = ".sieve"
 

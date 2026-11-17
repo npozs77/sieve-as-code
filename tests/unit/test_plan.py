@@ -7,9 +7,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.declared import render
-from sieve_as_code.model import (
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._declared import render
+from sieve_as_code._model import (
     ClientError,
     Filter,
     FilterOrder,
@@ -18,8 +18,8 @@ from sieve_as_code.model import (
     Targets,
     ValidationError,
 )
-from sieve_as_code.plan import PlanEntry, PlanResult, Reorder, diff, plan
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._plan import PlanEntry, PlanResult, Reorder, diff, plan
+from sieve_as_code._settings import AccountPaths
 from tests.fake_proton import FakeProton
 
 SCRIPTS = ["keep;", "stop;", "keep;  ", "\tkeep;", "discard;"]

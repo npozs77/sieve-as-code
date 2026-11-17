@@ -4,16 +4,16 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
 
-from sieve_as_code.audit import record_check
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.declared import (
+from sieve_as_code._audit import record_check
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._declared import (
     ScriptFacts,
     load_declared,
     normalize_whitespace,
     script_facts,
 )
-from sieve_as_code.live import discover, discover_targets
-from sieve_as_code.model import (
+from sieve_as_code._live import discover, discover_targets
+from sieve_as_code._model import (
     Filter,
     FilterSet,
     Rename,
@@ -21,7 +21,7 @@ from sieve_as_code.model import (
     Targets,
     ValidationError,
 )
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._settings import AccountPaths
 
 # BR-10: a superset of Proton's built-in mailboxes, so a built-in is never reported
 # missing; confirm the exact names with the live smoke suite (NFR-TEST.2).

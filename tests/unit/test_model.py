@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from sieve_as_code.model import (
+from sieve_as_code._model import (
     BackupError,
     Filter,
     FilterOrder,

@@ -15,15 +15,15 @@ import pytest
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
-from sieve_as_code.backup import diff_backups, prune_backups, read_backup, write_backup
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.model import (
+from sieve_as_code._backup import diff_backups, prune_backups, read_backup, write_backup
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._model import (
     BackupError,
     ClientError,
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.settings import AccountPaths, Retention
+from sieve_as_code._settings import AccountPaths, Retention
 from tests.fake_proton import FakeProton
 
 FINGERPRINT = "abcabcabcabc"
@@ -208,7 +208,7 @@ def test_an_existing_file_is_never_overwritten(
         def now(cls, tz: Any = None) -> "Fixed":
             return cls(2026, 11, 1, 12, 0, 0, 123456, tzinfo=tz or UTC)
 
-    monkeypatch.setattr("sieve_as_code.backup.datetime", Fixed)
+    monkeypatch.setattr("sieve_as_code._backup.datetime", Fixed)
     first = write_backup(work_account, client)
     before = first.path.read_bytes()
     fake_proton.add_filter("late")

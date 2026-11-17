@@ -10,13 +10,13 @@ import uuid
 
 import pytest
 
-from sieve_as_code.apply import apply_plan
-from sieve_as_code.backup import write_backup
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.model import ClientError
-from sieve_as_code.plan import plan
-from sieve_as_code.restore import restore
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._apply import apply_plan
+from sieve_as_code._backup import write_backup
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._model import ClientError
+from sieve_as_code._plan import plan
+from sieve_as_code._restore import restore
+from sieve_as_code._settings import AccountPaths
 from tests.integration.conftest import WRITE_VARIABLE
 
 Pair = tuple[AccountPaths, AccountPaths]

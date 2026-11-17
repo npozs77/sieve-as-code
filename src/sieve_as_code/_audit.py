@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sieve_as_code.model import SieveAsCodeError
+from sieve_as_code._model import SieveAsCodeError
 
 Scalar = str | int | bool | None
 

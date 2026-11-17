@@ -9,18 +9,18 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from sieve_as_code.client import ProtonClient, connect
-from sieve_as_code.declared import load_declared, load_local, normalize_whitespace
-from sieve_as_code.importer import ImportReport, import_live, import_sieve_files
-from sieve_as_code.live import discover
-from sieve_as_code.model import (
+from sieve_as_code._client import ProtonClient, connect
+from sieve_as_code._declared import load_declared, load_local, normalize_whitespace
+from sieve_as_code._importer import ImportReport, import_live, import_sieve_files
+from sieve_as_code._live import discover
+from sieve_as_code._model import (
     ClientError,
     Filter,
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.plan import diff
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._plan import diff
+from sieve_as_code._settings import AccountPaths
 from tests.fake_proton import FakeProton
 
 FRESH = settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -478,7 +478,7 @@ def test_import_then_load_equals_live_and_plan_is_clean(
     by_name = {f.name: f for f in filters}
     for item in live.filters:
         assert by_name[item.name].raw_sieve == normalize_whitespace(item.raw_sieve)
-    from sieve_as_code.model import FilterSet
+    from sieve_as_code._model import FilterSet
 
     declared = FilterSet(tuple(by_name[n] for n in order.sequence), order)
     plan = diff(declared, live, None)

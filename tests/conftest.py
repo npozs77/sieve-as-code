@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from sieve_as_code.settings import AccountPaths, account_paths
+from sieve_as_code._settings import AccountPaths, account_paths
 from tests.fake_proton import FakeProton
 
 

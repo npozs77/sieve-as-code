@@ -10,8 +10,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sieve_as_code.model import ValidationError
-from sieve_as_code.settings import (
+from sieve_as_code._model import ValidationError
+from sieve_as_code._settings import (
     AccountPaths,
     Retention,
     account_paths,

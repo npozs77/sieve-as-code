@@ -11,8 +11,8 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-from sieve_as_code.model import ClientError, Filter
-from sieve_as_code.settings import AccountPaths, proton_cli
+from sieve_as_code._model import ClientError, Filter
+from sieve_as_code._settings import AccountPaths, proton_cli
 
 TESTED_MINIMUM = (4, 3, 0)  # NFR-REL.3
 _TIMEOUT_SECONDS = 30

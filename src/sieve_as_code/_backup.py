@@ -9,10 +9,10 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from sieve_as_code.audit import record_check, record_write
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.live import discover
-from sieve_as_code.model import (
+from sieve_as_code._audit import record_check, record_write
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._live import discover
+from sieve_as_code._model import (
     BackupError,
     Filter,
     FilterOrder,
@@ -20,8 +20,8 @@ from sieve_as_code.model import (
     Rename,
     ValidationError,
 )
-from sieve_as_code.plan import PlanResult, diff
-from sieve_as_code.settings import AccountPaths, Retention
+from sieve_as_code._plan import PlanResult, diff
+from sieve_as_code._settings import AccountPaths, Retention
 
 _FORMAT = 1
 _KEYS = {
@@ -43,7 +43,8 @@ SNAPSHOT_TIME = "%Y%m%dT%H%M%S%fZ.json"
 class Snapshot:
     """A verified snapshot; `state` has `live_id` None and feeds `diff`. BR-11, BR-14.
 
-    `unchanged` is True when `write_backup` returned the existing latest snapshot.
+    `unchanged` is True when `write_backup` returned the existing latest snapshot;
+    `pruned` and `prune_error` are set by the public `backup` (Unit 9 BR-5).
     """
 
     path: Path
@@ -52,6 +53,8 @@ class Snapshot:
     fingerprint: str
     state: FilterSet
     unchanged: bool = False
+    pruned: tuple[str, ...] = ()
+    prune_error: str | None = None
 
 
 def checksum(document: dict[str, Any]) -> str:

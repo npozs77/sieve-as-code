@@ -5,12 +5,12 @@ from dataclasses import dataclass, replace
 from functools import partial
 from typing import Literal
 
-from sieve_as_code.audit import record_check, record_write
-from sieve_as_code.backup import Snapshot, read_backup, write_backup
-from sieve_as_code.client import ProtonClient
-from sieve_as_code.declared import load_declared
-from sieve_as_code.live import discover, discover_targets
-from sieve_as_code.model import (
+from sieve_as_code._audit import record_check, record_write
+from sieve_as_code._backup import Snapshot, read_backup, write_backup
+from sieve_as_code._client import ProtonClient
+from sieve_as_code._declared import load_declared
+from sieve_as_code._live import discover, discover_targets
+from sieve_as_code._model import (
     ClientError,
     Filter,
     FilterOrder,
@@ -18,8 +18,8 @@ from sieve_as_code.model import (
     SieveAsCodeError,
     ValidationError,
 )
-from sieve_as_code.plan import MissingTarget, PlanEntry, PlanResult, diff
-from sieve_as_code.settings import AccountPaths
+from sieve_as_code._plan import MissingTarget, PlanEntry, PlanResult, diff
+from sieve_as_code._settings import AccountPaths
 
 ActionKind = (
     Literal[

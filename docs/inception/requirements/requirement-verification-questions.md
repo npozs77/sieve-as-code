@@ -296,3 +296,13 @@ The first plan output listed changed filters by name only and `plan` exited 0 on
 [Suggested]: A
 [Justification]: A write cannot be reviewed before `--yes` without seeing what changes, and an unattended run needs a failing exit on drift without an extra option. Script text goes to the terminal only; the audit log stays free of it (NFR-SAFE.2).
 [Answer]: A — the user asked for feature parity in 0.1.0 and approved the change (Gate 3).
+
+### Q33. Defect: the restore plan hid deletions
+Found by running `restore` on a real account (Unit 9 acceptance). `restore --yes` deletes every live filter the backup lacks, but the plan it showed carried the plain diff: a filter created after the backup and disabled appeared only as `info: … live-only and disabled` under `outcome: clean`, and an enabled one as `live-only`, a name that does not say what happens. FR-BAK.4 requires the deletions to be shown in the plan. What does the plan show?
+- A) The report carries the plan that will run: every deletion is an entry, `informational` is empty, and the CLI names the action: `delete: NAME` in `restore`, `disable: NAME` (`delete: NAME` with `--allow-delete`) in `apply`
+- B) Keep the diff and add a warning line
+- C) Leave as is
+
+[Suggested]: A
+[Justification]: A restore that deletes what the plan calls clean can destroy a filter the user only disabled after the backup. Showing the executed plan makes the output the single source of what will happen (NFR-SAFE.1).
+[Answer]: A — a gap (the product missed what FR-BAK.4 already says), fixed in Unit 6 `restore` and Unit 9 rendering; approved with Gate 6.

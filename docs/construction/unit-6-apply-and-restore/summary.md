@@ -57,3 +57,4 @@ No gaps.
 - BR-11 dropped the `filters` count from the reorder's audit line (amended in the rules): the reorder's size is in the plan.
 - After `apply_plan`, declared filters are in declared relative order, but a live-only filter may sit before them (Unit 4 BR-8: live-only filters are ignored by the reorder).
 - Tests inject the audit failure at `record_write`/`record_check` in the modules under test and the post-run live changes at the `subprocess.run` boundary.
+- Defect (RVQ-Q33, found on a real account in Unit 9 acceptance): the restore report carried the plain diff, so a filter created after the backup and disabled showed as `info` under `outcome: clean` although `restore --yes` deletes it. `restore` now reports the plan that runs (`_with_deletes`, `informational` empty). Test: `test_unconfirmed_restore_is_refused_with_the_plan`. Approved with Gate 6.

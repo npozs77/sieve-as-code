@@ -57,7 +57,7 @@ No gaps.
 
 ## Tests
 
-- 674 unit tests passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works. `tests/live` collects and skips (6 skipped) without `SIEVE_AS_CODE_LIVE_TEST=1`.
+- 676 unit tests passing on Python 3.12, 3.13 and 3.14; line coverage 100%; ruff, black, mypy (strict) and vulture clean; `uv build` works. `tests/live` collects and skips (6 skipped) without `SIEVE_AS_CODE_LIVE_TEST=1`.
 - Build and test: `uv sync && make quality`; live suite: `SIEVE_AS_CODE_LIVE_TEST=1 SIEVE_AS_CODE_ACCOUNT=<profile> make live`.
 
 ## Implementation notes
@@ -66,3 +66,4 @@ No gaps.
 - The live suite has not been run against a real account in this session; its Proton-side assumptions (for example that Proton rejects `frobnicate;`) are checked the first time it is run.
 - `import --sieve` on a new account prints `account: NAME` without a fingerprint (BR-10).
 - Change (Gate 3 approved, RVQ-Q32): `plan` exits 1 on drift and the plans of `plan`, `apply`, `restore` and `backup-diff` show script text (BR-7, BR-11 amended); the audit log still never holds scripts.
+- Defect (RVQ-Q33): the plans of `apply` and `restore` now name what happens to a live-only filter (`disable:`, `delete:`; BR-8). Tests: `test_restore_plan_names_every_deletion_even_a_disabled_filter`, `test_apply_plan_names_what_happens_to_a_live_only_filter`. Approved with Gate 6.

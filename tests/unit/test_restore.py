@@ -150,7 +150,10 @@ def test_unconfirmed_restore_is_refused_with_the_plan(
         "enabled",
         "live-only",
     }
-    assert report.plan.informational == ("e",)
+    # BR-16: the plan that will run lists every deletion, disabled ones too.
+    assert report.plan.informational == ()
+    deleted = {e.name for e in report.plan.entries if e.kind == "live-only"}
+    assert deleted == {"d", "e"} and report.plan.outcome == "drift"
     assert state(fake_proton) == before and write_calls(fake_proton) == []
     assert len(snapshot_files(work_account)) == 1
     last = audit_lines(work_account)[-1]

@@ -9,7 +9,7 @@ Proton Mail Sieve filters as code on top of `proton-cli`: declare, plan, apply, 
 ### Commands
 
 - `discover`: print live filters in the declared format. Filters sharing a name are shown as `name`, `name (1)`, …; nothing in Proton is renamed.
-- `plan`: diff declared against live without changing anything. Lists missing folders and labels, creates (with their script), content changes (as a unified diff), `enabled` changes, one reorder, and enabled live-only filters; the `apply` and `restore` plans show the same. Exits 1 on drift, 0 when clean. Flags destructive extensions such as `vnd.proton.expire`. The outcome (`clean`, `drift`) is audit-logged.
+- `plan`: diff declared against live without changing anything. Lists missing folders and labels, creates (with their script), content changes (as a unified diff), `enabled` changes, one reorder, and enabled live-only filters; the `apply` and `restore` plans show the same and name what happens to each live-only filter (`disable:`, `delete:`). Exits 1 on drift, 0 when clean. Flags destructive extensions such as `vnd.proton.expire`. The outcome (`clean`, `drift`) is audit-logged.
 - `apply [--yes] [--allow-delete]`: shows the plan and refuses to write without `--yes`. Snapshots first, writes only what differs, and stops at the first failure with a report of succeeded, failed and not attempted. Live-only filters are disabled, not deleted, unless `--allow-delete`. A repeat `apply` with no changes writes nothing.
 - `import [NAME] [--force]` and `import --sieve FILE…`: write live filters or plain `.sieve` files into the declared files. Differing local files are listed and refused without `--force`; local-only filters are never deleted.
 - `backup [--keep-days N] [--keep-last N]`: snapshot the live filters on demand; writes nothing when live state equals the latest snapshot. Optional pruning by newest N and/or age, from the flags or `SIEVE_AS_CODE_KEEP_LAST` and `SIEVE_AS_CODE_KEEP_DAYS`; the newest snapshot is never removed.
@@ -48,7 +48,7 @@ Proton Mail Sieve filters as code on top of `proton-cli`: declare, plan, apply, 
 
 ### Testing
 
-- 674 unit tests (including property-based tests) at 100% line coverage; `proton-cli` is faked only at its subprocess boundary.
+- 676 unit tests (including property-based tests) at 100% line coverage; `proton-cli` is faked only at its subprocess boundary.
 - Opt-in live smoke suite (`make live`, needs `SIEVE_AS_CODE_LIVE_TEST=1` and `SIEVE_AS_CODE_ACCOUNT`) using only throwaway filters named `sieve-as-code-test-*`, and opt-in two-account isolation tests (`make integration`).
 
 ### Known limitations

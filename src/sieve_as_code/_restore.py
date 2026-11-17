@@ -48,7 +48,7 @@ def _with_deletes(
         for item in live.filters
         if item.name not in wanted
     )
-    return replace(result, entries=kept + extra)
+    return replace(result, entries=kept + extra, informational=())
 
 
 def _verify(
@@ -87,11 +87,9 @@ def restore(
     check_client(paths, client)
     snapshot = read_backup(ref, paths, client.fingerprint)
     live = discover(client)
-    plan = diff(snapshot.state, live, None)
-    steps = build_steps(
-        client, _with_deletes(plan, snapshot.state, live), snapshot.state, live, True
-    )
-    report = RestoreReport(plan)
+    shown = _with_deletes(diff(snapshot.state, live, None), snapshot.state, live)
+    steps = build_steps(client, shown, snapshot.state, live, True)
+    report = RestoreReport(shown)  # BR-16: the plan that will run
     if not steps:
         return report
     done = run_actions(report, paths, client, "restore", steps, confirmed)

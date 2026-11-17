@@ -512,3 +512,28 @@ def test_backup_diff_labels_the_two_snapshots_and_exits_zero(
         "    +stop;",
     ):
         assert line in out.splitlines()
+
+
+def test_restore_plan_names_every_deletion_even_a_disabled_filter(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-8, BR-11
+    fake_proton.add_filter("a", "keep;")
+    run("backup")
+    fake_proton.add_filter("late-enabled", "stop;")
+    fake_proton.add_filter("late-disabled", "stop;", status=0)
+    code, out, _ = run("restore")
+    assert code == 1
+    assert "delete: late-enabled" in out and "delete: late-disabled" in out
+    assert "info:" not in out and "outcome: drift" in out
+    assert fake_proton.names() == ["a", "late-enabled", "late-disabled"]
+
+
+def test_apply_plan_names_what_happens_to_a_live_only_filter(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-8, BR-11
+    fake_proton.add_filter("mine", "keep;")
+    fake_proton.add_filter("gone", "stop;")
+    declare(env, mine="keep;")
+    assert "disable: gone" in run("apply")[1]
+    assert "delete: gone" in run("apply", "--allow-delete")[1]
+    assert writes(fake_proton) == []

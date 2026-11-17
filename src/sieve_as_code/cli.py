@@ -54,14 +54,23 @@ def _script_lines(entry: PlanEntry, old: str, new: str) -> list[str]:
 
 
 def _plan_lines(
-    result: PlanResult, old: str = "live", new: str = "declared"
+    result: PlanResult,
+    old: str = "live",
+    new: str = "declared",
+    live_only: str | None = None,
 ) -> list[str]:
-    """BR-7, BR-11: plan entries in apply order, with their script changes."""
+    """BR-7, BR-11: plan entries in apply order, with their script changes.
+
+    `live_only` names what the command does with a live-only filter (BR-8).
+    """
     lines = [
         f"missing {item.kind}: {item.name} (used by {', '.join(item.used_by)})"
         for item in result.missing_targets
     ]
     for entry in result.entries:
+        if entry.kind == "live-only" and live_only:
+            lines.append(f"{live_only}: {entry.name}")
+            continue
         state = "" if entry.enabled is None else f" -> enabled={entry.enabled}"
         lines.append(f"{entry.kind}: {entry.name}{state}")
         lines += _script_lines(entry, old, new)
@@ -76,10 +85,13 @@ def _plan_lines(
 
 
 def _apply_lines(
-    report: ApplyReport, old: str = "live", new: str = "declared"
+    report: ApplyReport,
+    old: str = "live",
+    new: str = "declared",
+    live_only: str | None = None,
 ) -> list[str]:
     """BR-8: the plan, then what was written, failed and not attempted."""
-    lines = _plan_lines(report.plan, old, new)
+    lines = _plan_lines(report.plan, old, new, live_only)
     if report.refused:
         lines.append("nothing written; re-run with --yes")
     if report.snapshot:
@@ -98,11 +110,11 @@ def _apply_lines(
 
 def _restore_lines(report: RestoreReport) -> list[str]:
     """BR-7: the apply lines plus a remaining diff when restore did not converge."""
-    lines = _apply_lines(report, "live", "backup")
+    lines = _apply_lines(report, "live", "backup", "delete")
     if report.remaining is not None and report.failed is None and not report.ok:
         lines += [
             "remaining differences from the backup:",
-            *_plan_lines(report.remaining, "live", "backup"),
+            *_plan_lines(report.remaining, "live", "backup", "delete"),
         ]
     return lines
 
@@ -166,7 +178,8 @@ def _apply(args: argparse.Namespace) -> int:
     report = api.apply(
         account=args.account, confirmed=args.yes, allow_delete=args.allow_delete
     )
-    _show(args, _apply_lines(report))
+    verb = "delete" if args.allow_delete else "disable"
+    _show(args, _apply_lines(report, live_only=verb))
     return 0 if report.ok else 1
 
 

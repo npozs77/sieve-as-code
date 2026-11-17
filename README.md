@@ -92,7 +92,7 @@ sac.apply(account="personal", confirmed=True)
 | `retroactive_status(ref=None)`, `retroactive_audit()` | `RetroStatus`, `RetroAudit` |
 | `validate_declared(declared)` | raises `ValidationError` |
 
-Versioning follows semver and is provisional until 1.0: the 0.x API may still change, with a [changelog](CHANGELOG.md) entry.
+Versioning follows semver and is provisional until 1.0: the 0.x API may still change, with a [changelog](CHANGELOG.md) entry. Direction up to 1.0: [`ROADMAP.md`](ROADMAP.md).
 
 ## Declared files
 

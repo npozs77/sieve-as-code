@@ -60,6 +60,7 @@ No gaps.
 | BR-27 | `status` | `test_status_reports_done_pending_and_unexpected`, `test_status_after_completion_and_after_a_script_change` |
 | BR-28 | `audit_all`, `_row` | `test_audit_all_counts_each_enabled_filter_over_one_listing`, `test_audit_all_with_no_enabled_filter_*` |
 | BR-29 | all audit, snapshot and error paths | `test_no_private_text_reaches_the_audit_log_or_errors`, `test_a_confirmed_run_*` |
+| BR-30 | `_sieve_eval.py:_skip_spam_guard`, `commands` | `test_the_proton_spam_guard_is_ignored_in_every_layout`, `test_the_guard_never_changes_an_outcome` (PBT), `test_a_script_of_only_the_guard_compiles_to_nothing`, `test_other_forms_of_the_guard_stay_unsupported` |
 
 ## Tests
 
@@ -71,3 +72,4 @@ No gaps.
 - BR-18 gained one clause: a failing audit write on the refusal line raises.
 - The `messages list` fields were checked against the installed `proton-cli` 4.3.0 (names and types only): `id`, `subject`, `from_name`, `from_address`, `time`, `unread`, `labels`; system label ids 0, 3, 4, 6, 7 match the folder listings.
 - Found by running `retroactive-audit` on a real account (Unit 9 acceptance): Proton omits `from_name` for a sender without a display name, so BR-3 now treats an absent `from_name` as empty (`_retroactive.py:_message`, `test_an_absent_sender_name_counts_as_empty`). Minor gap, contained in this unit.
+- Change (Gate 3 approved, RVQ-Q31): BR-30 makes Proton's generated spam guard a no-op in the preview, found on a real account where it made most web-UI-generated filters not previewable. Amends FR-RETRO.2; `retroactive-audit` there goes from 2 to 5 previewable filters of 11.

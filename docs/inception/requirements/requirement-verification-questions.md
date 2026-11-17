@@ -276,3 +276,13 @@ Frequent scheduled backups of unchanged filters pile up identical files. What do
 [Suggested]: A
 [Justification]: Filters change rarely, so a skip keeps the history to real changes and makes "keep the last N" mean N distinct states; an identical snapshot is as good a restore point. Deleting is destructive, so it stays opt-in.
 [Answer]: A — the user proposed it; the skip applies to the `apply` and `restore` snapshots too; retention by environment variables.
+
+### Q31. Proton's generated spam guard in the retroactive preview
+Real-account acceptance found that most filters the Proton web UI generates open with a guard (`if allof (environment :matches "vnd.proton.spam-threshold" "*", spamtest :value "ge" :comparator "i;ascii-numeric" "${1}") { return; }`), which the preview subset rejects, so those filters were reported not previewable (FR-RETRO.2). What does the preview do with it?
+- A) Recognise exactly that guard at the start of the script, with a `return;` block or an empty block, and ignore it; every other use of `environment`, `spamtest` or `return` stays unsupported
+- B) Leave it unsupported
+- C) Support `environment`, `spamtest` and `return` in general
+
+[Suggested]: A
+[Justification]: The preview already excludes Spam (Unit 8 BR-4), so the guard cannot change which messages are listed, and an empty block changes nothing at all. Matching the exact shape keeps "never guessed" intact; general support (C) is a larger evaluator for no observed need.
+[Answer]: A — found by running `retroactive-audit` on a real account; the user approved the change (Gate 3).

@@ -22,6 +22,15 @@ _TOKEN = re.compile(
 )
 
 
+# BR-30: Proton's generated spam guard, as lower-cased token values up to its `{`.
+_SPAM_GUARD = (
+    *("if", "allof", "(", "environment", ":matches"),
+    *('"vnd.proton.spam-threshold"', '"*"', ",", "spamtest", ":value", '"ge"'),
+    *(":comparator", '"i;ascii-numeric"', '"${1}"', ")", "{"),
+)
+_GUARD_BLOCKS = (("}",), ("return", ";", "}"))
+
+
 def _fold(text: str) -> str:
     """The `i;ascii-casemap` comparator: ASCII letters only (BR-7)."""
     return text.translate(_LOWER)
@@ -170,9 +179,26 @@ class _Parser:
             raise self._fail("syntax")
         return _unquote(self._take().value)
 
+    def _skip_spam_guard(self) -> bool:
+        """BR-30: skip the exact Proton spam guard at the current position."""
+        values = [t.value.lower() for t in self.tokens[self.pos :]]
+        if tuple(values[: len(_SPAM_GUARD)]) != _SPAM_GUARD:
+            return False
+        rest = tuple(values[len(_SPAM_GUARD) :])
+        for block in _GUARD_BLOCKS:
+            if rest[: len(block)] == block:
+                self.pos += len(_SPAM_GUARD) + len(block)
+                return True
+        return False
+
     def commands(self, top: bool) -> tuple[_Command, ...]:
         program: list[_Command] = []
+        leading = top  # BR-30: the guard may follow `require` commands only
         while self.current.kind != "end" and (top or self.current.value != "}"):
+            if leading and self._skip_spam_guard():
+                leading = False
+                continue
+            leading = leading and self.current.value.lower() == "require"
             program.append(self._command())
         return tuple(program)
 

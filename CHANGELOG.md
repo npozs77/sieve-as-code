@@ -10,7 +10,7 @@ Semver; provisional until 1.0.
 - Per-account declared files, backups, retroactive snapshots and audit log; account fingerprint guard.
 - Verified, owner-only snapshots; `apply` and `restore` snapshot first and stop on the first failure.
 - `backup` retention: `SIEVE_AS_CODE_KEEP_DAYS`, `SIEVE_AS_CODE_KEEP_LAST`, `--keep-days`, `--keep-last`.
-- Retroactive preview for a Sieve subset, typed confirmation, snapshot and status.
+- Retroactive preview for a Sieve subset (including Proton's generated spam guard), typed confirmation, snapshot and status.
 - Opt-in live smoke suite (`make live`) and two-account integration tests (`make integration`).
 
 ### Changed

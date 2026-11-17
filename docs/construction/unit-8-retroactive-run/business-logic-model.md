@@ -69,7 +69,8 @@ RetroReport
 ## Evaluator Subset (BR-6 to BR-13)
 
 ```
-script    := { require | command }
+script    := { require } [ guard ] { require | command }
+guard     := Proton spam guard, exact shape (BR-30); skipped, no effect
 command   := if-chain | "stop" | fileinto | flagcmd | expire
 if-chain  := "if" test block { "elsif" test block } [ "else" block ]
 test      := "true" | "false" | "not" test | ("allof"|"anyof") "(" test {"," test} ")"

@@ -270,3 +270,73 @@ def test_any_text_compiles_or_is_unsupported(parts: list[str] | str) -> None:  #
     script = parts if isinstance(parts, str) else " ".join(parts)
     with contextlib.suppress(UnsupportedSieve):
         compile_script(script)
+
+
+REQUIRE = (
+    'require ["fileinto", "imap4flags", "environment", "variables", "relational", '
+    '"comparator-i;ascii-numeric", "spamtest"];\n'
+)
+TEST = (
+    'environment :matches "vnd.proton.spam-threshold" "*",\n'
+    '  spamtest :value "ge" :comparator "i;ascii-numeric" "${1}"'
+)
+GUARDS = [
+    "# Do not run this script on spam messages\n"
+    f"if allof ({TEST})\n{{\n  return;\n}}\n",
+    f"if allof ({TEST})\n{{\n\n}}\n",
+    f"/* guard */ IF ALLOF ({TEST}) {{ RETURN; }}\n",
+    'if allof (environment :matches "vnd.proton.spam-threshold" "*", '
+    'spamtest :value "ge" :comparator "i;ascii-numeric" "${1}") { return; }\n',
+]
+BODIES = [
+    'fileinto "x";',
+    'if header :contains "subject" "digest" { fileinto "x"; } else { stop; }',
+    'addflag "\\\\Seen"; fileinto "y";',
+]
+
+
+@pytest.mark.parametrize("guard", GUARDS)
+@pytest.mark.parametrize("subject", ["Weekly Digest", "other"])
+def test_the_proton_spam_guard_is_ignored_in_every_layout(
+    guard: str, subject: str
+) -> None:  # BR-30
+    body = BODIES[1]
+    assert outcome(REQUIRE + guard + body, subject=subject) == outcome(
+        REQUIRE + body, subject=subject
+    )
+
+
+@given(st.sampled_from(GUARDS), st.sampled_from(BODIES), st.text(max_size=20))
+def test_the_guard_never_changes_an_outcome(
+    guard: str, body: str, subject: str
+) -> None:  # BR-30
+    assert outcome(REQUIRE + guard + body, subject=subject) == outcome(
+        REQUIRE + body, subject=subject
+    )
+
+
+def test_a_script_of_only_the_guard_compiles_to_nothing() -> None:  # BR-30
+    compiled = compile_script(REQUIRE + GUARDS[0])
+    assert compiled.mailboxes == () and compiled.recipient_keys == ()
+    assert outcome(REQUIRE + GUARDS[1]) == Outcome((), frozenset(), None)
+
+
+@pytest.mark.parametrize(
+    ("script", "construct"),
+    [
+        (GUARDS[3].replace("spam-threshold", "other-threshold"), "environment"),
+        (GUARDS[3].replace('"ge"', '"gt"'), "environment"),
+        (GUARDS[3].replace("{ return; }", "{ return; stop; }"), "environment"),
+        (GUARDS[3].replace("{ return; }", "{ return; } else { stop; }"), "else"),
+        ('fileinto "x";\n' + GUARDS[3], "environment"),
+        (GUARDS[3] + GUARDS[3], "environment"),
+        (f"if true {{ {GUARDS[3]} }}", "environment"),
+        ("return;", "return"),
+    ],
+)
+def test_other_forms_of_the_guard_stay_unsupported(
+    script: str, construct: str
+) -> None:  # BR-30
+    with pytest.raises(UnsupportedSieve) as raised:
+        compile_script(REQUIRE + script)
+    assert raised.value.construct == construct

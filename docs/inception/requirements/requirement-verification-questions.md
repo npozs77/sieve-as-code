@@ -286,3 +286,13 @@ Real-account acceptance found that most filters the Proton web UI generates open
 [Suggested]: A
 [Justification]: The preview already excludes Spam (Unit 8 BR-4), so the guard cannot change which messages are listed, and an empty block changes nothing at all. Matching the exact shape keeps "never guessed" intact; general support (C) is a larger evaluator for no observed need.
 [Answer]: A — found by running `retroactive-audit` on a real account; the user approved the change (Gate 3).
+
+### Q32. What `plan` shows and how it exits
+The first plan output listed changed filters by name only and `plan` exited 0 on drift. The tool it replaces printed each script change as a diff and exited non-zero when anything differed. Which behaviour does `plan` have?
+- A) Feature parity: show the script of each created filter and a unified diff of each content change (also in the `apply` and `restore` plans), and exit 1 on drift
+- B) Names only, exit 0 on drift, with a later `--check` option
+- C) Diff only; keep exit 0
+
+[Suggested]: A
+[Justification]: A write cannot be reviewed before `--yes` without seeing what changes, and an unattended run needs a failing exit on drift without an extra option. Script text goes to the terminal only; the audit log stays free of it (NFR-SAFE.2).
+[Answer]: A — the user asked for feature parity in 0.1.0 and approved the change (Gate 3).

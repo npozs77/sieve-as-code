@@ -1,6 +1,7 @@
 """The `sieve-as-code` command: argparse dispatch over the public API (FR-CLI.1)."""
 
 import argparse
+import difflib
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -9,7 +10,7 @@ import sieve_as_code as api
 from sieve_as_code._apply import ApplyReport
 from sieve_as_code._declared import render
 from sieve_as_code._model import SieveAsCodeError, ValidationError
-from sieve_as_code._plan import PlanResult
+from sieve_as_code._plan import PlanEntry, PlanResult
 from sieve_as_code._restore import RestoreReport
 from sieve_as_code._retroactive import RetroPreview, RetroReport
 from sieve_as_code._settings import account_paths, resolve_account
@@ -35,8 +36,27 @@ def _show(args: argparse.Namespace, lines: Sequence[str]) -> None:
         print(line)
 
 
-def _plan_lines(result: PlanResult) -> list[str]:
-    """BR-7, BR-11: plan entries in apply order; names only, never scripts."""
+def _script_lines(entry: PlanEntry, old: str, new: str) -> list[str]:
+    """BR-11: a created filter's script, or a unified diff of a content change."""
+    if entry.kind == "create" and entry.after is not None:
+        return [f"    + {line}" for line in entry.after.split("\n")]
+    if entry.kind == "content" and entry.before is not None and entry.after is not None:
+        diff = difflib.unified_diff(
+            entry.before.split("\n"),
+            entry.after.split("\n"),
+            fromfile=old,
+            tofile=new,
+            lineterm="",
+            n=2,
+        )
+        return [f"    {line}" for line in diff]
+    return []
+
+
+def _plan_lines(
+    result: PlanResult, old: str = "live", new: str = "declared"
+) -> list[str]:
+    """BR-7, BR-11: plan entries in apply order, with their script changes."""
     lines = [
         f"missing {item.kind}: {item.name} (used by {', '.join(item.used_by)})"
         for item in result.missing_targets
@@ -44,6 +64,7 @@ def _plan_lines(result: PlanResult) -> list[str]:
     for entry in result.entries:
         state = "" if entry.enabled is None else f" -> enabled={entry.enabled}"
         lines.append(f"{entry.kind}: {entry.name}{state}")
+        lines += _script_lines(entry, old, new)
     if result.reorder:
         lines.append(f"reorder: {result.reorder.old} -> {result.reorder.new}")
     lines += [f"warning: {f.name} uses {f.extension}" for f in result.flags]
@@ -54,9 +75,11 @@ def _plan_lines(result: PlanResult) -> list[str]:
     return [*lines, f"outcome: {result.outcome}"]
 
 
-def _apply_lines(report: ApplyReport) -> list[str]:
+def _apply_lines(
+    report: ApplyReport, old: str = "live", new: str = "declared"
+) -> list[str]:
     """BR-8: the plan, then what was written, failed and not attempted."""
-    lines = _plan_lines(report.plan)
+    lines = _plan_lines(report.plan, old, new)
     if report.refused:
         lines.append("nothing written; re-run with --yes")
     if report.snapshot:
@@ -75,11 +98,11 @@ def _apply_lines(report: ApplyReport) -> list[str]:
 
 def _restore_lines(report: RestoreReport) -> list[str]:
     """BR-7: the apply lines plus a remaining diff when restore did not converge."""
-    lines = _apply_lines(report)
+    lines = _apply_lines(report, "live", "backup")
     if report.remaining is not None and report.failed is None and not report.ok:
         lines += [
             "remaining differences from the backup:",
-            *_plan_lines(report.remaining),
+            *_plan_lines(report.remaining, "live", "backup"),
         ]
     return lines
 
@@ -132,9 +155,10 @@ def _discover(args: argparse.Namespace) -> int:
 
 
 def _plan(args: argparse.Namespace) -> int:
-    """BR-7: drift is output."""
-    _show(args, _plan_lines(api.plan(account=args.account)))
-    return 0
+    """BR-7: exit 1 on drift, 0 when clean."""
+    result = api.plan(account=args.account)
+    _show(args, _plan_lines(result))
+    return 0 if result.outcome == "clean" else 1
 
 
 def _apply(args: argparse.Namespace) -> int:
@@ -184,7 +208,8 @@ def _backup(args: argparse.Namespace) -> int:
 
 def _backup_diff(args: argparse.Namespace) -> int:
     """BR-7: differences between two snapshots are output."""
-    _show(args, _plan_lines(api.backup_diff(args.a, args.b, account=args.account)))
+    result = api.backup_diff(args.a, args.b, account=args.account)
+    _show(args, _plan_lines(result, Path(args.a).name, Path(args.b).name))
     return 0
 
 

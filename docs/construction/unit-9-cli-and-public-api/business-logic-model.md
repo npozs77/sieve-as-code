@@ -59,7 +59,7 @@ argv → argparse → handler(args) → wrapper(...) → render(result) → exit
 | Command | Arguments | Calls | Exit 0 when | Rules |
 |---|---|---|---|---|
 | `discover` | | `discover` | printed | BR-12 |
-| `plan` | | `plan` | printed (drift included) | BR-7 |
+| `plan` | | `plan` | no drift (drift exits 1) | BR-7 |
 | `apply` | `--yes`, `--allow-delete` | `apply` | report `ok` | BR-8 |
 | `import` | `[NAME] [--force]` or `--sieve FILE...` | `import_live`, `import_sieve_files` | not refused | BR-13 |
 | `backup` | `--keep-days N`, `--keep-last N` | `backup` | written, or unchanged | BR-5 |
@@ -118,7 +118,7 @@ No new dataclasses. `Snapshot` gains `pruned: tuple[str, ...] = ()` and `prune_e
 
 ## Examples and Edge Cases
 
-- `sieve-as-code plan` with drift → prints entries, exit 0 (BR-7).
+- `sieve-as-code plan` with drift → prints entries with each script (a unified diff for a change), exit 1; clean → exit 0 (BR-7, BR-11).
 - `sieve-as-code apply` → plan, `nothing written; re-run with --yes`, exit 1; with an empty plan → no refusal, exit 0 (Unit 6).
 - `sieve-as-code backup --keep-last 0` → usage error, exit 2 before any Proton call (BR-5, BR-14).
 - `SIEVE_AS_CODE_KEEP_LAST=5` and `--keep-days 30` → keep-last from the variable, keep-days from the flag (BR-5).
@@ -150,11 +150,11 @@ The documented surface (BR-1) and the `sieve-as-code` command. Operations will d
 | BR-4 | Unit | results frozen; `Snapshot` defaults for the new fields; `load_declared` → `FilterSet`; `validate_declared` raises on bad input | `tests/unit/test_api.py` |
 | BR-5 | Unit + PBT | argument over env per field; none → no prune; 0 or `"3"` → `ValidationError` before a call; prune failure → `prune_error`, snapshot kept; unchanged backup still prunes; `apply` snapshot never prunes | `tests/unit/test_api.py` |
 | BR-6 | Unit | exit 0 / 1 / 2 / 130 per outcome; `error:` line on stderr, no traceback, no script text | `tests/unit/test_cli.py` |
-| BR-7 | Unit | drift, backup differences, pending → 0; restore remaining diff → 1 | `tests/unit/test_cli.py` |
+| BR-7 | Unit | `plan` drift → 1, clean → 0; backup differences, pending → 0; restore remaining diff → 1 | `tests/unit/test_cli.py` |
 | BR-8 | Unit | no `--yes` → plan printed, refusal, exit 1, fake unchanged; `--yes` writes; `--allow-delete` only on `apply` | `tests/unit/test_cli.py` |
 | BR-9 | Unit | exact name and reason run; wrong case → refused; EOF → refused; no entries → no prompt; prompt names account and fingerprint; no `--yes` option | `tests/unit/test_cli.py` |
 | BR-10 | Unit | first line `account: work (fingerprint …)`; no marker → name alone; mismatch error has no banner | `tests/unit/test_cli.py` |
-| BR-11 | Unit | only `discover` output contains script text; stdout of `plan`, `apply`, `restore` holds none | `tests/unit/test_cli.py` |
+| BR-11 | Unit | script text in `discover` and in the plans of `plan`, `apply`, `restore`, `backup-diff` (diff labels); never in the audit log | `tests/unit/test_cli.py` |
 | BR-12, BR-13 | Unit | discover text equals import's file text; renames listed; import refused → `changed` names, exit 1; `--sieve` imports; `NAME` plus `--sieve` → 2 | `tests/unit/test_cli.py` |
 | BR-14, BR-15 | Unit | `--account` on every subcommand; `--keep-days 0` → 2; no command → 2; `--help`, `--version` → 0; `main` never raises `SystemExit`; entry point in package metadata resolves to `cli:main` | `tests/unit/test_cli.py` |
 | BR-16 | Unit | `__version__` equals `pyproject.toml` | `tests/unit/test_api.py` |

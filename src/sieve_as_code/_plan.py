@@ -36,12 +36,17 @@ EntryKind = Literal["create", "content", "enabled", "live-only"]
 
 @dataclass(frozen=True)
 class PlanEntry:
-    """One filter-level change; `enabled` is the value to set (None for content)."""
+    """One filter-level change; `enabled` is the value to set (None for content).
+
+    `before` (live) and `after` (target) are the normalised scripts. BR-20.
+    """
 
     kind: EntryKind
     name: str
     live_id: str | None = None
     enabled: bool | None = None
+    before: str | None = None
+    after: str | None = None
 
 
 @dataclass(frozen=True)
@@ -150,10 +155,14 @@ def _entries(declared: FilterSet, live: Mapping[str, Filter]) -> tuple[PlanEntry
         want = by_name[name]
         have = live.get(name)
         if have is None:
-            creates.append(PlanEntry("create", name, None, want.enabled))
+            script = normalize_whitespace(want.raw_sieve)
+            creates.append(PlanEntry("create", name, None, want.enabled, None, script))
             continue
-        if normalize_whitespace(want.raw_sieve) != normalize_whitespace(have.raw_sieve):
-            contents.append(PlanEntry("content", name, have.live_id))
+        before, after = (normalize_whitespace(f.raw_sieve) for f in (have, want))
+        if before != after:  # BR-20
+            contents.append(
+                PlanEntry("content", name, have.live_id, None, before, after)
+            )
         if want.enabled != have.enabled:
             toggles.append(PlanEntry("enabled", name, have.live_id, want.enabled))
     return tuple(creates + contents + toggles)

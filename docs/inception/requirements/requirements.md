@@ -65,7 +65,7 @@ Rationale for each decision lives in `requirement-verification-questions.md` (RV
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-PLAN.1 | `plan` diffs declared against live state with no mutation. Entries: creates, content changes, `enabled` changes, enabled live-only filters, one reorder, and missing targets (RVQ-Q3). A live-only filter that is already disabled is listed as informational and is not drift (RVQ-Q21). | Must |
+| FR-PLAN.1 | `plan` diffs declared against live state with no mutation. Entries: creates, content changes, `enabled` changes, enabled live-only filters, one reorder, and missing targets (RVQ-Q3). A live-only filter that is already disabled is listed as informational and is not drift (RVQ-Q21). The output shows each created filter's script and each content change as a unified diff, in `apply` and `restore` plans too, and `plan` exits non-zero on drift (RVQ-Q32). | Must |
 | FR-PLAN.2 | A reorder is exactly one diff entry (old vs new sequence), however many filters moved. Only filters present both declared and live are compared; live-only filters are ignored (RVQ-Q21). | Must |
 | FR-PLAN.3 | `plan` lists each `fileinto` folder or label that an enabled declared filter targets and the account lacks, ahead of the filter entries, each marked folder or label: a target with `/`, and each missing parent of one, is a folder, any other name a label. Names match case-insensitively, folders by full path and labels by name (RVQ-Q28). Proton's built-in mailboxes are never listed. A target `plan` cannot read literally fails the plan. | Must |
 | FR-PLAN.4 | `plan` is the drift detector; there is no baseline file. Its outcome (`clean`, `drift`, `invalid`) is audit-logged. | Must |

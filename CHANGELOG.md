@@ -9,7 +9,7 @@ Proton Mail Sieve filters as code on top of `proton-cli`: declare, plan, apply, 
 ### Commands
 
 - `discover`: print live filters in the declared format. Filters sharing a name are shown as `name`, `name (1)`, …; nothing in Proton is renamed.
-- `plan`: diff declared against live without changing anything. Lists missing folders and labels, creates, content and `enabled` changes, one reorder, and enabled live-only filters. Flags destructive extensions such as `vnd.proton.expire`. The outcome (`clean`, `drift`) is audit-logged.
+- `plan`: diff declared against live without changing anything. Lists missing folders and labels, creates (with their script), content changes (as a unified diff), `enabled` changes, one reorder, and enabled live-only filters; the `apply` and `restore` plans show the same. Exits 1 on drift, 0 when clean. Flags destructive extensions such as `vnd.proton.expire`. The outcome (`clean`, `drift`) is audit-logged.
 - `apply [--yes] [--allow-delete]`: shows the plan and refuses to write without `--yes`. Snapshots first, writes only what differs, and stops at the first failure with a report of succeeded, failed and not attempted. Live-only filters are disabled, not deleted, unless `--allow-delete`. A repeat `apply` with no changes writes nothing.
 - `import [NAME] [--force]` and `import --sieve FILE…`: write live filters or plain `.sieve` files into the declared files. Differing local files are listed and refused without `--force`; local-only filters are never deleted.
 - `backup [--keep-days N] [--keep-last N]`: snapshot the live filters on demand; writes nothing when live state equals the latest snapshot. Optional pruning by newest N and/or age, from the flags or `SIEVE_AS_CODE_KEEP_LAST` and `SIEVE_AS_CODE_KEEP_DAYS`; the newest snapshot is never removed.
@@ -25,7 +25,7 @@ Proton Mail Sieve filters as code on top of `proton-cli`: declare, plan, apply, 
 - No write to Proton without a plan and `--yes` (or the typed confirmation).
 - Snapshots are versioned, checksummed, owner-only and never overwrite an existing file; reading verifies version and checksum.
 - Account guard: each account has a fingerprint (first 12 hex characters of a SHA-256 of the Proton account id, never the email). A profile signed in to a different account stops every command, and `restore`, `backup-diff` and `retroactive-status` refuse a foreign snapshot.
-- Audit log per account: append-only JSON lines with names, counts, outcome and timestamp; never scripts, senders or subjects.
+- Audit log per account: append-only JSON lines with names, counts, outcome and timestamp; never scripts, senders or subjects (the terminal plans do show scripts).
 - Scripts reach `proton-cli` on stdin only; sessions are checked before every command and nothing prompts interactively. A `proton-cli` older than the tested 4.3.0 warns on stderr and continues.
 - Error messages carry only the first line of `proton`'s diagnostic, capped at 200 characters.
 
@@ -48,7 +48,7 @@ Proton Mail Sieve filters as code on top of `proton-cli`: declare, plan, apply, 
 
 ### Testing
 
-- 668 unit tests (including property-based tests) at 100% line coverage; `proton-cli` is faked only at its subprocess boundary.
+- 674 unit tests (including property-based tests) at 100% line coverage; `proton-cli` is faked only at its subprocess boundary.
 - Opt-in live smoke suite (`make live`, needs `SIEVE_AS_CODE_LIVE_TEST=1` and `SIEVE_AS_CODE_ACCOUNT`) using only throwaway filters named `sieve-as-code-test-*`, and opt-in two-account isolation tests (`make integration`).
 
 ### Known limitations

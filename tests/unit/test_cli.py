@@ -112,14 +112,35 @@ def test_account_line_has_no_fingerprint_before_first_proton_contact(
     assert code == 0 and out.splitlines()[0] == "account: work"
 
 
-def test_plan_with_drift_exits_zero_and_shows_no_script(
+def test_plan_with_drift_exits_one_and_shows_the_new_script(
     run: Any, env: AccountPaths
 ) -> None:  # BR-7, BR-11
     declare(env, mine=MOVE)
     code, out, _ = run("plan")
-    assert code == 0
+    assert code == 1
     assert "create: mine" in out and "outcome: drift" in out
-    assert SECRET not in out
+    assert f"    + # {SECRET}" in out and '    + fileinto "Archive";' in out
+    assert SECRET not in env.audit_log.read_text()
+
+
+def test_plan_shows_a_unified_diff_of_a_content_change(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-7, BR-11
+    fake_proton.add_filter("mine", "keep;\n")
+    declare(env, mine="stop;\n")
+    code, out, _ = run("plan")
+    assert code == 1 and "content: mine" in out
+    for line in ("    --- live", "    +++ declared", "    -keep;", "    +stop;"):
+        assert line in out.splitlines()
+
+
+def test_plan_exits_zero_when_clean(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-7
+    fake_proton.add_filter("mine", "keep;")
+    declare(env, mine="keep;")
+    code, out, _ = run("plan")
+    assert code == 0 and "outcome: clean" in out
 
 
 def test_apply_without_yes_prints_the_plan_and_refuses(
@@ -129,7 +150,7 @@ def test_apply_without_yes_prints_the_plan_and_refuses(
     code, out, _ = run("apply")
     assert code == 1
     assert "create: mine" in out and "nothing written; re-run with --yes" in out
-    assert writes(fake_proton) == [] and SECRET not in out
+    assert writes(fake_proton) == [] and SECRET in out
 
 
 def test_apply_with_yes_writes_and_a_second_plan_is_clean(
@@ -140,7 +161,7 @@ def test_apply_with_yes_writes_and_a_second_plan_is_clean(
     assert code == 0 and "done: create mine" in out
     assert fake_proton.names() == ["mine"]
     assert "outcome: clean" in run("plan")[1]
-    assert SECRET not in out
+    assert SECRET not in env.audit_log.read_text()
 
 
 def test_apply_failure_names_the_failed_action_and_exits_one(
@@ -450,3 +471,44 @@ def test_console_script_points_at_main() -> None:  # BR-15
     scripts = entry_points(group="console_scripts")
     assert scripts["sieve-as-code"].value == "sieve_as_code.cli:main"
     assert scripts["sieve-as-code"].load() is cli.main
+
+
+def test_restore_plan_diffs_live_against_the_backup(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-8, BR-11
+    fake_proton.add_filter("a", "keep;")
+    run("backup")
+    fake_proton.filters[0]["sieve"] = "stop;"
+    code, out, _ = run("restore")
+    assert code == 1
+    for line in ("    --- live", "    +++ backup", "    -stop;", "    +keep;"):
+        assert line in out.splitlines()
+
+
+def test_apply_plan_shows_the_diff_before_refusing(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-8, BR-11
+    fake_proton.add_filter("mine", "keep;")
+    declare(env, mine="stop;")
+    code, out, _ = run("apply")
+    assert code == 1 and "    +stop;" in out.splitlines()
+    assert "nothing written; re-run with --yes" in out
+
+
+def test_backup_diff_labels_the_two_snapshots_and_exits_zero(
+    run: Any, env: AccountPaths, fake_proton: FakeProton
+) -> None:  # BR-7, BR-11
+    fake_proton.add_filter("a", "keep;")
+    run("backup")
+    fake_proton.filters[0]["sieve"] = "stop;"
+    run("backup")
+    first, second = sorted(env.backups_dir.glob("*.json"))
+    code, out, _ = run("backup-diff", str(first), str(second))
+    assert code == 0
+    for line in (
+        f"    --- {first.name}",
+        f"    +++ {second.name}",
+        "    -keep;",
+        "    +stop;",
+    ):
+        assert line in out.splitlines()

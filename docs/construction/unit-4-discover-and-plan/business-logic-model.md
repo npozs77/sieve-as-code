@@ -89,7 +89,8 @@ ScriptFacts(required: frozenset[str], mailboxes: tuple[Mailbox, ...])
 Mailbox(line: int, name: str | None)         # None = unreadable (BR-11)
 
 PlanEntry(kind: "create" | "content" | "enabled" | "live-only",
-          name: str, live_id: str | None, enabled: bool | None)
+          name: str, live_id: str | None, enabled: bool | None,
+          before: str | None, after: str | None)   # scripts, BR-20
 Reorder(old: tuple[str, ...], new: tuple[str, ...])
 MissingTarget(name: str, used_by: tuple[str, ...], kind: "folder" | "label")
 Flag(name: str, extension: str)

@@ -47,7 +47,7 @@ Layout (default roots; see [Configuration](#configuration)):
 sieve-as-code import                 # live filters -> declared files (--force to overwrite)
 sieve-as-code import --sieve a.sieve # plain .sieve files -> declared files
 sieve-as-code discover               # print live filters in the declared format
-sieve-as-code plan                   # diff declared vs live; changes nothing
+sieve-as-code plan                   # script diffs, declared vs live; changes nothing; exit 1 on drift
 sieve-as-code apply --yes            # snapshot, then write only what differs (--allow-delete removes live-only filters)
 sieve-as-code backup                 # snapshot live filters (--keep-days N, --keep-last N prune old ones)
 sieve-as-code backup-diff A B        # compare two snapshots
@@ -57,7 +57,7 @@ sieve-as-code retroactive-status [SNAPSHOT]  # done / pending / unexpected since
 sieve-as-code retroactive-audit      # messages each enabled filter would change
 ```
 
-Every command takes `--account NAME` and prints the account and its fingerprint first. Exit codes: 0 success, 1 refused, failed or a diff remains, 2 usage or validation error, 130 interrupted. A diff you asked to see (`plan`, `backup-diff`) is output, so it exits 0.
+Every command takes `--account NAME` and prints the account and its fingerprint first. Exit codes: 0 success, 1 refused, failed or a diff remains, 2 usage or validation error, 130 interrupted. `plan` exits 1 on drift and prints each created script and a unified diff of each change; a diff you asked to see with `backup-diff` is output, so it exits 0.
 
 A rename is a delete plus a create: identity is the filter `name`.
 

@@ -8,7 +8,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from sieve_as_code._client import ProtonClient, connect
-from sieve_as_code._declared import render
+from sieve_as_code._declared import normalize_whitespace, render
 from sieve_as_code._model import (
     ClientError,
     Filter,
@@ -137,7 +137,7 @@ def test_each_entry_kind_and_the_apply_order() -> None:  # BR-5, BR-6, BR-7, BR-
         ("enabled", "flip"),
         ("live-only", "gone"),
     ]
-    assert result.entries[0] == PlanEntry("create", "new", None, False)
+    assert result.entries[0].enabled is False and result.entries[0].after is not None
     assert result.entries[2] == PlanEntry("enabled", "flip", "id-flip", False)
     assert result.informational == ("quiet",)
     assert result.reorder == Reorder(("flip", "edit", "new"), ("new", "edit", "flip"))
@@ -456,3 +456,17 @@ def test_a_failing_audit_write_does_not_hide_the_validation_error(
     with pytest.raises(ValidationError, match="filters directory") as caught:
         plan(work_account, client)
     assert isinstance(caught.value.__cause__, SieveAsCodeError)
+
+
+def test_create_and_content_entries_carry_the_normalised_scripts() -> None:  # BR-20
+    declared = state(("new", "keep;\r\n", True), ("edit", "if true {\tstop;}", False))
+    live = state(("edit", "keep;", True), ("flip", "keep;", True), live=True)
+    for targets in (Targets(), None):  # plan mode and snapshot mode
+        created, edited, toggled, only = diff(declared, live, targets).entries
+        assert (created.before, created.after) == (
+            None,
+            normalize_whitespace("keep;\r\n"),
+        )
+        assert edited.before == "keep;"
+        assert edited.after == normalize_whitespace("if true {\tstop;}")
+        assert (toggled.before, toggled.after, only.before, only.after) == (None,) * 4
